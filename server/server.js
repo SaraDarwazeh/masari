@@ -3,6 +3,7 @@
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
+const SqliteStore = require('better-sqlite3-session-store')(session);
 const bcrypt = require('bcryptjs');
 const Database = require('better-sqlite3');
 
@@ -60,10 +61,17 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '4mb' }));
 app.use(session({
+  store: new SqliteStore({
+    client: db,
+    // rows live in a `sessions` table in the same DB, so logins survive
+    // server restarts / redeploys. Expired rows are swept hourly.
+    expired: { clear: true, intervalMs: 60 * 60 * 1000 },
+  }),
   secret: SESSION_SECRET,
   name: 'masari.sid',
   resave: false,
   saveUninitialized: false,
+  rolling: true, // slide the 30-day expiry forward on every request while she's active
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
