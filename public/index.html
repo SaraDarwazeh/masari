@@ -84,6 +84,8 @@ header{
 header .bar{display:flex;align-items:baseline;justify-content:space-between;max-width:560px;margin:0 auto}
 header h1{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:.5px}
 header .month{font-size:13px;opacity:.85}
+.menu-btn{color:inherit;font-size:19px;line-height:1;padding:6px;border-radius:10px;opacity:.9}
+.menu-btn:active{background:rgba(255,255,255,.12)}
 /* the stitch band — X cross-stitches like tatreez */
 .stitches{height:10px;display:flex;justify-content:center;gap:7px;overflow:hidden;margin-top:8px}
 .stitches i{
@@ -290,7 +292,10 @@ table.mini td.n{font-variant-numeric:tabular-nums}
 <header>
   <div class="bar">
     <h1>مصاري</h1>
-    <span class="month" id="hdrMonth"></span>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="month" id="hdrMonth"></span>
+      <button class="menu-btn" data-go="more" aria-label="القائمة">☰</button>
+    </div>
   </div>
   <div class="stitches" aria-hidden="true"></div>
 </header>
@@ -479,7 +484,6 @@ table.mini td.n{font-variant-numeric:tabular-nums}
   <button class="fab" id="fabAdd" aria-label="إضافة عملية">+</button>
   <button class="tab" data-tab="goals"><span class="em">🎯</span>الأهداف</button>
   <button class="tab" data-tab="wishlist"><span class="em">🛒</span>قايمتي</button>
-  <button class="tab" data-tab="more"><span class="em">☰</span>المزيد</button>
 </nav>
 
 <!-- ================= SHEETS ================= -->
