@@ -622,6 +622,7 @@ table.mini td.n{font-variant-numeric:tabular-nums}
     <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
     <button class="ghost" data-k="cancel" id="lockCancel">إلغاء</button><button data-k="0">0</button><button data-k="back">⌫</button>
   </div>
+  <button class="link" id="lockRegisterLink" style="margin-top:18px;font-size:13px;color:var(--pine);font-weight:700">مستخدمة جديدة؟ سجّلي حساب</button>
 </div>
 
 <script>
@@ -738,20 +739,29 @@ function lockError(msg){
   $('#lockError').textContent = msg || ' ';
   if(msg){ const ls=$('#lockScreen'); ls.classList.add('shake'); setTimeout(()=>ls.classList.remove('shake'),350); }
 }
-function showLock(mode, title, sub, showCancel){
+function showLock(mode, title, sub, showCancel, showUsername){
   lockMode = mode; pinBuf=''; renderPinDots(); lockError('');
   $('#lockTitle').textContent = title;
   $('#lockSub').textContent = sub || ' ';
   $('#lockCancel').style.visibility = showCancel ? 'visible' : 'hidden';
-  $('#lockUserWrap').style.display = arguments[4] ? '' : 'none';
+  $('#lockUserWrap').style.display = showUsername ? '' : 'none';
+  $('#lockRegisterLink').style.display = (mode==='unlock') ? '' : 'none';
   $('#lockScreen').style.display='flex';
-  if(arguments[4] && !$('#lockUsername').value){ setTimeout(()=>$('#lockUsername').focus(), 60); }
+  if(showUsername && !$('#lockUsername').value){ setTimeout(()=>$('#lockUsername').focus(), 60); }
 }
 function hideLock(){ $('#lockScreen').style.display='none'; }
 function onLockCancel(){
   pinBuf=''; renderPinDots();
+  if(lockMode==='register' || lockMode==='register-confirm'){
+    showLock('unlock','أدخلي اسم المستخدم ورمز الدخول','', false, true);
+    return;
+  }
   if(lockMode!=='unlock' && lockMode!=='setup' && lockMode!=='setup-confirm'){ hideLock(); renderSettings(); }
 }
+$('#lockRegisterLink').addEventListener('click', ()=>{
+  $('#lockUsername').value = '';
+  showLock('register','اختاري اسم مستخدم ورمز دخول ٦ أرقام','هاد الحساب رح يكون خاص فيكِ بس', true, true);
+});
 function handleShortcutHash(){
   const h = (location.hash||'').replace(/^#/, '');
   if(h==='add-exp' || h==='add') { history.replaceState(null,'',location.pathname); openTxSheet(null); return; }
@@ -797,6 +807,30 @@ async function submitPin(){
     const err = await r.json().catch(()=>({}));
     lockError(err.error==='bad-username' ? 'اسم مستخدم غلط' : 'صار خلل، جربي كمان مرة');
     showLock('setup','رحّبي فيكي! اختاري اسم مستخدم ورمز دخول ٦ أرقام','رح تحتاجيهم كل مرة تفتحي مصاري', false, true);
+    return;
+  }
+  if(lockMode==='register'){
+    const username = readUsername();
+    if(!/^[a-z0-9](?:[a-z0-9_-]{0,18}[a-z0-9])?$/.test(username)){
+      lockError('اسم مستخدم غلط — أحرف/أرقام إنجليزية بدون فراغات');
+      pinBuf=''; renderPinDots(); return;
+    }
+    pinFirstEntry = pin;
+    showLock('register-confirm','أكدي الرمز','اكتبيه مرة ثانية عشان نتأكد', true, false);
+    return;
+  }
+  if(lockMode==='register-confirm'){
+    if(pin!==pinFirstEntry){
+      lockError('الرمزين مش متطابقين — من جديد');
+      showLock('register','اختاري اسم مستخدم ورمز دخول ٦ أرقام','هاد الحساب رح يكون خاص فيكِ بس', true, true);
+      return;
+    }
+    const username = readUsername();
+    const r = await api('/register', {method:'POST', body:JSON.stringify({username, password:pin})});
+    if(r.ok){ await afterAuth(); return; }
+    const err = await r.json().catch(()=>({}));
+    lockError(err.error==='username-taken' ? 'الاسم مستخدم، جربي اسم ثاني' : err.error==='bad-username' ? 'اسم مستخدم غلط' : 'صار خلل، جربي كمان مرة');
+    showLock('register','اختاري اسم مستخدم ورمز دخول ٦ أرقام','هاد الحساب رح يكون خاص فيكِ بس', true, true);
     return;
   }
   if(lockMode==='unlock'){

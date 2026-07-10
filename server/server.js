@@ -121,6 +121,26 @@ app.post('/api/setup', (req, res) => {
   res.json({ ok: true });
 });
 
+/* Self-registration: anyone with the app URL can create their own account
+   (always role 'user', never 'owner') without the owner seeing their password. */
+app.post('/api/register', (req, res) => {
+  if (userCount() === 0) return res.status(403).json({ error: 'no-owner-yet' });
+  const ip = req.ip;
+  const wait = cooldownSecondsLeft(ip);
+  if (wait) return res.status(429).json({ error: 'cooldown', wait });
+  const { username, password } = req.body || {};
+  const name = String(username||'').trim().toLowerCase();
+  if (!USERNAME_RE.test(name)) return res.status(400).json({ error: 'bad-username' });
+  if (!password || String(password).length < 4) return res.status(400).json({ error: 'weak-password' });
+  if (findUserByName(name)) { recordFail(ip); return res.status(409).json({ error: 'username-taken' }); }
+  const hash = bcrypt.hashSync(String(password), 12);
+  const info = db.prepare("INSERT INTO users (username, password_hash, role) VALUES (?, ?, 'user')").run(name, hash);
+  recordSuccess(ip);
+  req.session.userId = info.lastInsertRowid;
+  req.session.role = 'user';
+  res.json({ ok: true });
+});
+
 app.post('/api/login', (req, res) => {
   const ip = req.ip;
   const wait = cooldownSecondsLeft(ip);
