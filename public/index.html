@@ -24,6 +24,8 @@
   --ink:#212A27; --ink2:#5C6862; --ink3:#8A948E;
   --line:#E5DDD0; --line2:#EFE9DD;
   --pine:#175244; --pine-soft:#E3EEE9; --pine-ink:#0F3A30;
+  --header-bg:#123F34; --header-ink:#F3F0E8;
+  --balance-bg:#1C6A55; --balance-ink:#FFFFFF;
   --tatreez:#B4233A; --tatreez-soft:#F7E4E7;
   --good:#128F55; --bad:#B4233A; --warn:#A8731C; --warn-soft:#F6ECDA;
   --c1:#128F55; --c2:#B4233A; --c3:#3B6FD4; --c4:#A8731C; --c5:#7C4FC4; --c6:#B0532F;
@@ -37,6 +39,8 @@
   --ink:#EAE5DB; --ink2:#A7B2AB; --ink3:#79847E;
   --line:#2C3833; --line2:#243029;
   --pine:#3FA184; --pine-soft:#1D2E29; --pine-ink:#9FD6C3;
+  --header-bg:#16302A; --header-ink:#E8F3EE;
+  --balance-bg:#1F6E5A; --balance-ink:#F4FBF8;
   --tatreez:#DB4D66; --tatreez-soft:#33202379;
   --good:#2EA477; --bad:#DB4D66; --warn:#BE8829; --warn-soft:#2E271A;
   --c1:#2EA477; --c2:#DB4D66; --c3:#5580DE; --c4:#BE8829; --c5:#9873D9; --c6:#CD6B40;
@@ -48,6 +52,8 @@
     --ink:#EAE5DB; --ink2:#A7B2AB; --ink3:#79847E;
     --line:#2C3833; --line2:#243029;
     --pine:#3FA184; --pine-soft:#1D2E29; --pine-ink:#9FD6C3;
+    --header-bg:#16302A; --header-ink:#E8F3EE;
+    --balance-bg:#1F6E5A; --balance-ink:#F4FBF8;
     --tatreez:#DB4D66; --tatreez-soft:#33202379;
     --good:#2EA477; --bad:#DB4D66; --warn:#BE8829; --warn-soft:#2E271A;
     --c1:#2EA477; --c2:#DB4D66; --c3:#5580DE; --c4:#BE8829; --c5:#9873D9; --c6:#CD6B40;
@@ -75,12 +81,10 @@ label{font-size:13px;font-weight:600;color:var(--ink2);display:block;margin-bott
 
 /* ============ header + tatreez signature ============ */
 header{
-  background:var(--pine);color:#FAF7F1;
+  background:var(--header-bg);color:var(--header-ink);
   padding:calc(14px + env(safe-area-inset-top)) 20px 12px;
   position:sticky;top:0;z-index:30;
 }
-:root[data-theme="dark"] header, :root:not([data-theme="light"]) header{color:var(--surface)}
-@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) header{color:#FAF7F1} }
 header .bar{display:flex;align-items:baseline;justify-content:space-between;max-width:560px;margin:0 auto}
 header h1{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:.5px}
 header .month{font-size:13px;opacity:.85}
@@ -117,12 +121,10 @@ h2.sec:first-child{margin-top:4px}
 .tiny{color:var(--ink3);font-size:12px}
 
 /* total balance hero card */
-.balance-card{background:var(--pine);color:#FAF7F1;border-radius:var(--r);padding:18px 20px;margin-bottom:12px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-:root[data-theme="dark"] .balance-card{color:#EAF4EF}
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .balance-card{color:#EAF4EF} }
-.balance-card .lbl{font-size:13px;font-weight:600;opacity:.85}
+.balance-card{background:var(--balance-bg);color:var(--balance-ink);border-radius:var(--r);padding:18px 20px;margin-bottom:12px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.balance-card .lbl{font-size:13px;font-weight:600;opacity:.9}
 .balance-card .val{font-size:32px;font-weight:700;margin-top:3px;line-height:1.1}
-.balance-card .sub{font-size:12px;opacity:.8;margin-top:4px;min-height:16px}
+.balance-card .sub{font-size:12px;opacity:.85;margin-top:4px;min-height:16px}
 .balance-card .val.neg{color:#FFD9DF}
 
 /* stat tiles */
@@ -447,6 +449,10 @@ table.mini td.n{font-variant-numeric:tabular-nums}
         <button class="btn ghost sm" id="btnLogout">خروج</button>
       </div>
       <div class="security-row">
+        <span style="font-size:14px;font-weight:600">اسم المستخدم</span>
+        <button class="btn ghost sm" id="btnChangeUsername">تغيير</button>
+      </div>
+      <div class="security-row">
         <span style="font-size:14px;font-weight:600">رمز الدخول</span>
         <button class="btn ghost sm" id="btnChangePin">تغيير</button>
       </div>
@@ -569,6 +575,18 @@ table.mini td.n{font-variant-numeric:tabular-nums}
            id="newUserPin" placeholder="123456" dir="ltr" autocomplete="new-password">
   </div>
   <button class="btn primary block" id="newUserSave">إنشاء الحساب</button>
+</div>
+
+<div class="sheet" id="sheet-username">
+  <div class="grab"></div>
+  <h3>تغيير اسم المستخدم ✏️</h3>
+  <p class="tiny" style="margin-bottom:14px">رمز الدخول وبياناتك ما بتتغير — بس الاسم اللي بتسجلي فيه.</p>
+  <div class="field"><label>اسم المستخدم الجديد</label>
+    <input type="text" id="editUsername" placeholder="مثلاً: saso" dir="ltr"
+           autocapitalize="none" autocorrect="off" spellcheck="false">
+    <p class="tiny" style="margin-top:4px">أحرف صغيرة/أرقام بس، بدون فراغات</p>
+  </div>
+  <button class="btn primary block" id="editUsernameSave">حفظ</button>
 </div>
 
 <div class="sheet" id="sheet-payment">
@@ -894,6 +912,24 @@ document.addEventListener('keydown', e=>{
 let currentUser = null;
 $('#btnChangePin').addEventListener('click', ()=>{
   showLock('change-verify','أدخلي رمز الدخول الحالي','', true, false);
+});
+$('#btnChangeUsername').addEventListener('click', ()=>{
+  $('#editUsername').value = currentUser ? currentUser.username : '';
+  openSheet('sheet-username');
+  setTimeout(()=>$('#editUsername').focus(), 200);
+});
+$('#editUsernameSave').addEventListener('click', async ()=>{
+  const username = $('#editUsername').value.trim().toLowerCase();
+  if(!/^[a-z0-9](?:[a-z0-9_-]{0,18}[a-z0-9])?$/.test(username)){ toast('اسم مستخدم غلط'); return; }
+  if(currentUser && username===currentUser.username){ closeSheets(); return; }
+  const r = await api('/change-username', {method:'POST', body:JSON.stringify({username})});
+  if(r.ok){
+    if(currentUser) currentUser.username = username;
+    closeSheets(); toast('اتغيّر الاسم ✅'); renderSettings();
+  } else {
+    const err = await r.json().catch(()=>({}));
+    toast(err.error==='username-taken' ? 'الاسم مستخدم، جربي غيره' : 'ما زبط، جربي كمان مرة');
+  }
 });
 $('#btnLogout').addEventListener('click', async ()=>{
   await api('/logout', {method:'POST'});

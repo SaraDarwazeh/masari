@@ -182,6 +182,15 @@ app.post('/api/change-password', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+app.post('/api/change-username', requireAuth, (req, res) => {
+  const name = String((req.body || {}).username || '').trim().toLowerCase();
+  if (!USERNAME_RE.test(name)) return res.status(400).json({ error: 'bad-username' });
+  const existing = findUserByName(name);
+  if (existing && existing.id !== req.session.userId) return res.status(409).json({ error: 'username-taken' });
+  db.prepare('UPDATE users SET username = ? WHERE id = ?').run(name, req.session.userId);
+  res.json({ ok: true });
+});
+
 /* ---- per-user state ---- */
 app.get('/api/state', requireAuth, (req, res) => {
   const row = db.prepare('SELECT data FROM user_state WHERE user_id = ?').get(req.session.userId);
