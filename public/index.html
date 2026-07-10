@@ -192,8 +192,8 @@ nav{
   padding:6px 8px calc(6px + env(safe-area-inset-bottom));
   display:flex;justify-content:space-around;align-items:center;
 }
-nav .tab{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--ink3);padding:4px 10px;border-radius:12px;min-width:56px}
-nav .tab .em{font-size:20px;line-height:1.2;filter:grayscale(1);opacity:.55}
+nav .tab{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:10px;font-weight:600;color:var(--ink3);padding:4px 6px;border-radius:12px;min-width:48px;flex:1}
+nav .tab .em{font-size:19px;line-height:1.2;filter:grayscale(1);opacity:.55}
 nav .tab.on{color:var(--pine)}
 nav .tab.on .em{filter:none;opacity:1}
 nav .fab{
@@ -336,6 +336,7 @@ table.mini td.n{font-variant-numeric:tabular-nums}
 
   <!-- ================= IDEAS ================= -->
   <section class="page" id="page-ideas">
+    <button class="back" data-go="more">→ رجوع</button>
     <h2 class="sec">بنك الأفكار</h2>
     <div class="card" style="text-align:center;padding:22px">
       <button class="rec-btn" id="btnRec" aria-label="سجلي فكرة صوتياً">🎙️</button>
@@ -352,8 +353,7 @@ table.mini td.n{font-variant-numeric:tabular-nums}
     <div class="list menu">
       <button class="row" data-go="subs"><span class="dot">🔁</span><span class="grow"><span class="t1">الاشتراكات</span><span class="t2" id="mSubsSummary"></span></span><span class="chev">‹</span></button>
       <button class="row" data-go="debts"><span class="dot">🤝</span><span class="grow"><span class="t1">الديون</span><span class="t2" id="mDebtsSummary"></span></span><span class="chev">‹</span></button>
-      <button class="row" data-go="goals"><span class="dot">🎯</span><span class="grow"><span class="t1">الأهداف</span><span class="t2" id="mGoalsSummary"></span></span><span class="chev">‹</span></button>
-      <button class="row" data-go="wishlist"><span class="dot">🛒</span><span class="grow"><span class="t1">قائمة المشتريات</span><span class="t2" id="mWishSummary"></span></span><span class="chev">‹</span></button>
+      <button class="row" data-go="ideas"><span class="dot">💡</span><span class="grow"><span class="t1">أفكاري</span><span class="t2" id="mIdeasSummary"></span></span><span class="chev">‹</span></button>
       <button class="row" data-go="settings"><span class="dot">⚙️</span><span class="grow"><span class="t1">الإعدادات والنسخ الاحتياطي</span></span><span class="chev">‹</span></button>
     </div>
   </section>
@@ -383,14 +383,12 @@ table.mini td.n{font-variant-numeric:tabular-nums}
 
   <!-- ================= GOALS ================= -->
   <section class="page" id="page-goals">
-    <button class="back" data-go="more">→ رجوع</button>
     <div class="sec-row"><h2 class="sec">الأهداف</h2><button class="link" id="btnAddGoal">+ هدف</button></div>
     <div id="goalsList"></div>
   </section>
 
   <!-- ================= WISHLIST ================= -->
   <section class="page" id="page-wishlist">
-    <button class="back" data-go="more">→ رجوع</button>
     <div class="sec-row"><h2 class="sec">قائمة المشتريات</h2><button class="link" id="btnAddWish">+ إضافة</button></div>
     <div id="wishlistList"></div>
   </section>
@@ -433,6 +431,24 @@ table.mini td.n{font-variant-numeric:tabular-nums}
       </div>
     </div>
     <p class="tiny" style="margin:-4px 0 14px">بياناتك محفوظة على سيرفرك الخاص، ومحمية برمز الدخول. صدّري نسخة احتياطية كل فترة لأي طارئ.</p>
+    <h2 class="sec">اختصارات الإضافة السريعة</h2>
+    <div class="card">
+      <p class="tiny" style="margin-bottom:10px">iOS ما بيدعم ويدجيتات على الشاشة الرئيسية للتطبيقات على الويب، بس بتقدري تضيفي روابط مباشرة على الشاشة بواسطة تطبيق <b>Shortcuts</b> — بتفتح مصاري وبتوديكي مباشرة على شاشة الإضافة.</p>
+      <div class="security-row"><span style="font-size:13px;font-weight:600">➕ إضافة مصروف</span>
+        <button class="btn ghost sm" id="btnCopyExp">نسخ الرابط</button></div>
+      <div class="security-row"><span style="font-size:13px;font-weight:600">💰 إضافة دخل</span>
+        <button class="btn ghost sm" id="btnCopyInc">نسخ الرابط</button></div>
+      <details style="margin-top:10px;font-size:13px">
+        <summary style="font-weight:600;color:var(--pine)">كيف أعمل الاختصار؟</summary>
+        <ol style="padding-inline-start:18px;margin-top:6px;line-height:1.9">
+          <li>افتحي تطبيق <b>Shortcuts</b> على الآيفون واعملي "+".</li>
+          <li>أضيفي إجراء <b>Open URLs</b> والصقي فيه الرابط.</li>
+          <li>من الأعلى، اكبسي "Add to Home Screen" واختاري أيقونة واسم.</li>
+          <li>الأيقونة رح تظهر على الشاشة الرئيسية — تكبسيها بتفتحك على شاشة الإضافة مباشرة.</li>
+        </ol>
+      </details>
+    </div>
+
     <h2 class="sec">بياناتك</h2>
     <div class="card">
       <p class="tiny" style="margin-bottom:12px">البيانات محفوظة بقاعدة بيانات على سيرفرك — اعملي نسخة احتياطية كل فترة عشان راحة بالك.</p>
@@ -450,7 +466,8 @@ table.mini td.n{font-variant-numeric:tabular-nums}
   <button class="tab on" data-tab="home"><span class="em">🏠</span>الرئيسية</button>
   <button class="tab" data-tab="analytics"><span class="em">📊</span>التحليل</button>
   <button class="fab" id="fabAdd" aria-label="إضافة عملية">+</button>
-  <button class="tab" data-tab="ideas"><span class="em">💡</span>أفكاري</button>
+  <button class="tab" data-tab="goals"><span class="em">🎯</span>الأهداف</button>
+  <button class="tab" data-tab="wishlist"><span class="em">🛒</span>قايمتي</button>
   <button class="tab" data-tab="more"><span class="em">☰</span>المزيد</button>
 </nav>
 
@@ -477,7 +494,10 @@ table.mini td.n{font-variant-numeric:tabular-nums}
   <div class="grab"></div>
   <h3 id="subTitle">اشتراك جديد</h3>
   <div class="field"><label>اسم الاشتراك</label><input type="text" id="subName" placeholder="Netflix, Claude, iCloud..."></div>
-  <div class="field"><label>المبلغ</label><input type="text" inputmode="decimal" id="subAmount" placeholder="0.00" dir="ltr"></div>
+  <div style="display:flex;gap:10px">
+    <div class="field" style="flex:2"><label>المبلغ</label><input type="text" inputmode="decimal" id="subAmount" placeholder="0.00" dir="ltr"></div>
+    <div class="field" style="flex:1"><label>العملة</label><select id="subCurrency"></select></div>
+  </div>
   <div class="field"><label>الدورة</label>
     <select id="subCycle"><option value="m">شهري</option><option value="y">سنوي</option></select>
   </div>
@@ -627,7 +647,12 @@ function migrate(){
     const { paid, ...rest } = d;
     return { ...rest, currency, payments };
   });
+  db.subs = (db.subs||[]).map(s => ({
+    ...s,
+    currency: s.currency || db.settings.currency || '₪',
+  }));
 }
+const subCcy = s => s.currency || db.settings.currency || '₪';
 let db = emptyDB();
 const api = (path, opts) => fetch('/api'+path, {credentials:'include', headers:{'content-type':'application/json'}, ...opts});
 let saveTimer=null, saveFailed=false;
@@ -689,12 +714,24 @@ function onLockCancel(){
   pinBuf=''; renderPinDots();
   if(lockMode!=='unlock' && lockMode!=='setup' && lockMode!=='setup-confirm'){ hideLock(); renderSettings(); }
 }
+function handleShortcutHash(){
+  const h = (location.hash||'').replace(/^#/, '');
+  if(h==='add-exp' || h==='add') { history.replaceState(null,'',location.pathname); openTxSheet(null); return; }
+  if(h==='add-inc') {
+    history.replaceState(null,'',location.pathname);
+    openTxSheet(null);
+    setTimeout(()=>{ const b=document.querySelector('#txTypeSeg [data-v="inc"]'); if(b) b.click(); }, 60);
+    return;
+  }
+}
 async function afterAuth(){
   const r = await api('/state');
   if(r.ok){ const data = await r.json(); if(data) db = data; }
   migrate();
   hideLock(); applyTheme(); render('home');
+  handleShortcutHash();
 }
+window.addEventListener('hashchange', ()=>{ if($('#lockScreen').style.display!=='flex') handleShortcutHash(); });
 async function submitPin(){
   if(Date.now()<cooldownUntil){ lockError('استنى شوي وجربي مرة تانية'); pinBuf=''; renderPinDots(); return; }
   const pin = pinBuf;
@@ -793,12 +830,12 @@ const subMonthly = s => s.cycle==='y' ? s.amount/12 : s.amount;
 /* =================================================================
    ROUTER
 ================================================================= */
-const TABS = {home:'home', analytics:'analytics', ideas:'ideas', more:'more'};
+const TABS = {home:'home', analytics:'analytics', goals:'goals', wishlist:'wishlist', more:'more'};
 let currentPage = 'home';
 function go(page){
   currentPage = page;
   $$('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+page));
-  const tab = TABS[page] ? page : (['subs','debts','debt-detail','goals','wishlist','settings'].includes(page)?'more':page);
+  const tab = TABS[page] ? page : (['subs','debts','debt-detail','ideas','settings'].includes(page)?'more':page);
   $$('nav .tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===tab));
   window.scrollTo(0,0);
   render(page);
@@ -885,6 +922,8 @@ let subEditId=null;
 function openSubSheet(s){
   subEditId = s ? s.id : null;
   $('#subTitle').textContent = s?'تعديل الاشتراك':'اشتراك جديد';
+  $('#subCurrency').innerHTML = CURRENCIES.map(c=>`<option value="${c.v}">${c.nm}</option>`).join('');
+  $('#subCurrency').value = s ? (s.currency || db.settings.currency || '₪') : (db.settings.currency||'₪');
   $('#subName').value = s?s.name:''; $('#subAmount').value = s?s.amount:'';
   $('#subCycle').value = s?s.cycle:'m'; $('#subNext').value = s?s.next:todayISO();
   $('#subTrial').checked = s?!!s.trial:false;
@@ -895,7 +934,8 @@ $('#btnAddSub').addEventListener('click', ()=>openSubSheet(null));
 $('#subSave').addEventListener('click', ()=>{
   const name=$('#subName').value.trim(); const amount=num($('#subAmount').value);
   if(!name||!amount){ toast('الاسم والمبلغ ضروريين'); return; }
-  const rec={id:subEditId||uid(), name, amount, cycle:$('#subCycle').value, next:$('#subNext').value||todayISO(), trial:$('#subTrial').checked};
+  const currency=$('#subCurrency').value;
+  const rec={id:subEditId||uid(), name, amount, currency, cycle:$('#subCycle').value, next:$('#subNext').value||todayISO(), trial:$('#subTrial').checked};
   if(subEditId){ db.subs=db.subs.map(s=>s.id===rec.id?rec:s); } else db.subs.push(rec);
   save(); closeSheets(); render('subs'); toast('تمام ✅');
 });
@@ -1170,7 +1210,7 @@ $('#btnAIReview').addEventListener('click', async ()=>{
     const cats = spendByCat(y).map(([c,v])=>`${catOf(c).nm}: ${Math.round(v)}`).join('، ');
     return `شهر ${ymLabel(y)}: دخل ${Math.round(monthIncome(y))}، مصروف ${Math.round(monthSpend(y))} (${cats||'بدون مصاريف'})`;
   }).join('\n');
-  const subs = db.subs.map(s=>`${s.name}: ${Math.round(subMonthly(s))}/شهر${s.trial?' (تجربة)':''}`).join('، ')||'ما في';
+  const subs = db.subs.map(s=>`${s.name}: ${Math.round(subMonthly(s))} ${subCcy(s)}/شهر${s.trial?' (تجربة)':''}`).join('، ')||'ما في';
   const debts = db.debts.map(d=>`${d.dir==='onMe'?'عليها':'إلها'} ${Math.round(debtLeft(d))} ${debtCcy(d)} (${d.who})`).join('، ')||'ما في';
   const goals = db.goals.map(g=>`${g.name}: ${Math.round(g.saved)}/${Math.round(g.target)}`).join('، ')||'ما في';
   btn.disabled=true; btn.textContent='عم أحلل...';
@@ -1431,18 +1471,28 @@ document.addEventListener('click', e=>{
 });
 
 function renderSubs(){
-  const total=db.subs.reduce((a,s)=>a+subMonthly(s),0);
-  $('#subsTotal').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline">
-    <span class="muted">كلفة اشتراكاتك بالشهر</span><b style="font-size:20px" class="num">${fmt(total)} ${cur()}</b></div>`;
+  /* monthly total per currency */
+  const totals = {};
+  db.subs.forEach(s => {
+    const c = subCcy(s);
+    totals[c] = (totals[c]||0) + subMonthly(s);
+  });
+  const totalsList = Object.entries(totals);
+  $('#subsTotal').innerHTML = totalsList.length
+    ? `<div><div class="muted" style="font-size:12px;font-weight:600;margin-bottom:6px">كلفتك الشهرية</div>
+        <div style="display:flex;flex-wrap:wrap;gap:14px">${totalsList.map(([c,v])=>
+          `<div><b style="font-size:19px" class="num">${fmt(v)}</b> <span style="font-size:13px;color:var(--ink2);font-weight:600">${c}</span></div>`
+        ).join('')}</div></div>`
+    : `<span class="muted">ولا اشتراك لسا</span>`;
   const warns=db.subs.filter(s=>s.trial&&daysUntil(s.next)<=7);
-  $('#subsWarn').innerHTML=warns.map(s=>`<div class="danger-strip">🚨 تجربة ${esc(s.name)} بتخلص ${daysUntil(s.next)<=0?'اليوم':'بعد '+daysUntil(s.next)+' أيام'} — ألغيها قبل ما ينسحب ${money(s.amount)}!</div>`).join('');
+  $('#subsWarn').innerHTML=warns.map(s=>`<div class="danger-strip">🚨 تجربة ${esc(s.name)} بتخلص ${daysUntil(s.next)<=0?'اليوم':'بعد '+daysUntil(s.next)+' أيام'} — ألغيها قبل ما ينسحب ${fmt(s.amount)} ${subCcy(s)}!</div>`).join('');
   $('#subsList').innerHTML = db.subs.length ? [...db.subs].sort((a,b)=>a.next.localeCompare(b.next)).map(s=>{
     const d=daysUntil(s.next);
     return `<button class="row" data-editsub="${s.id}">
       <span class="dot">${s.trial?'⏳':'🔁'}</span>
       <span class="grow"><span class="t1">${esc(s.name)} ${s.trial?'<span style="color:var(--warn);font-size:11px">تجربة</span>':''}</span>
       <span class="t2">${s.cycle==='y'?'سنوي':'شهري'} · ${d<0?'فات التجديد':d===0?'بتجدد اليوم':'بعد '+d+' يوم'}</span></span>
-      <span class="amt num">${fmt(s.amount)}</span></button>`;
+      <span class="amt"><span class="num">${fmt(s.amount)}</span> <span style="font-size:11px;color:var(--ink2)">${subCcy(s)}</span></span></button>`;
   }).join('') : `<div class="empty"><span class="big">🔁</span>سجلي اشتراكاتك كلها — خاصة التجارب المجانية اللي بتنسيها 😉</div>`;
 }
 document.addEventListener('click', e=>{
@@ -1611,15 +1661,19 @@ document.addEventListener('click', e=>{
   }
 });
 function renderMore(){
-  const subsTotal=db.subs.reduce((a,s)=>a+subMonthly(s),0);
-  $('#mSubsSummary').textContent = db.subs.length?`${db.subs.length} اشتراكات · ${fmt(subsTotal)} ${cur()}/شهر`:'ولا اشتراك مسجل';
+  const subTotals = {};
+  db.subs.forEach(s => { const c=subCcy(s); subTotals[c]=(subTotals[c]||0)+subMonthly(s); });
+  const subEntries = Object.entries(subTotals);
+  $('#mSubsSummary').textContent = subEntries.length
+    ? `${db.subs.length} اشتراكات · ${subEntries.map(([c,v])=>`${fmt(v)} ${c}`).join(' + ')}/شهر`
+    : 'ولا اشتراك مسجل';
   const oweTotals = totalsByCurrency(db.debts.filter(d=>d.dir==='onMe'));
   $('#mDebtsSummary').textContent = oweTotals.length
     ? 'عليكِ: ' + oweTotals.map(([c,v])=>`${fmt(v)} ${c}`).join(' · ')
     : 'ولا دين مفتوح 🎉';
-  $('#mGoalsSummary').textContent = db.goals.length?`${db.goals.length} أهداف شغالة`:'ولا هدف بعد';
-  const pendingWish=db.wishlist.filter(w=>!w.bought);
-  $('#mWishSummary').textContent = pendingWish.length?`${pendingWish.length} أشياء · ${fmt(pendingWish.reduce((a,w)=>a+w.price,0))} ${cur()}`:'ولا شي مسجل بعد';
+  const activeIdeas = db.ideas.filter(i=>i.status!=='later').length;
+  const mi = $('#mIdeasSummary');
+  if(mi) mi.textContent = db.ideas.length ? `${db.ideas.length} فكرة · ${activeIdeas} شغالة` : 'ولا فكرة مسجلة';
 }
 function renderSettings(){
   $('#setCurrency').value=db.settings.currency||'₪';
@@ -1646,6 +1700,15 @@ function applyTheme(){
   const t=db.settings.theme;
   if(t) document.documentElement.dataset.theme=t; else delete document.documentElement.dataset.theme;
 }
+
+/* iOS Shortcut links */
+async function copyShortcut(hash){
+  const url = location.origin + location.pathname + '#' + hash;
+  try{ await navigator.clipboard.writeText(url); toast('انتسخ الرابط ✅'); }
+  catch(e){ prompt('انسخي الرابط:', url); }
+}
+$('#btnCopyExp').addEventListener('click', ()=>copyShortcut('add-exp'));
+$('#btnCopyInc').addEventListener('click', ()=>copyShortcut('add-inc'));
 
 /* export / import */
 $('#btnExport').addEventListener('click', ()=>{
