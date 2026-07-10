@@ -1,0 +1,16 @@
+services:
+  masari:
+    build: .
+    ports:
+      - "${PORT:-4471}:${PORT:-4471}"
+    environment:
+      - PORT=${PORT:-4471}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - NODE_ENV=${NODE_ENV:-production}
+      - DB_PATH=/data/masari.db
+    volumes:
+      - masari_data:/data
+    restart: unless-stopped
+
+volumes:
+  masari_data:

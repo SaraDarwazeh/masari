@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>مصاري</title>
+<meta name="description" content="مصاري — تطبيقك الشخصي لإدارة فلوسك وأفكارك">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#175244" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121816" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="مصاري">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ tokens ============ */
+:root{
+  --surface:#FAF7F1; --card:#FFFFFF; --card2:#F3EEE4;
+  --ink:#212A27; --ink2:#5C6862; --ink3:#8A948E;
+  --line:#E5DDD0; --line2:#EFE9DD;
+  --pine:#175244; --pine-soft:#E3EEE9; --pine-ink:#0F3A30;
+  --tatreez:#B4233A; --tatreez-soft:#F7E4E7;
+  --good:#128F55; --bad:#B4233A; --warn:#A8731C; --warn-soft:#F6ECDA;
+  --c1:#128F55; --c2:#B4233A; --c3:#3B6FD4; --c4:#A8731C; --c5:#7C4FC4; --c6:#B0532F;
+  --shadow:0 1px 3px rgba(33,42,39,.07),0 6px 20px rgba(33,42,39,.06);
+  --r:16px;
+  --font:"IBM Plex Sans Arabic",-apple-system,"Segoe UI",sans-serif;
+  --display:"Aref Ruqaa",serif;
+}
+:root[data-theme="dark"]{
+  --surface:#121816; --card:#1B2320; --card2:#212B27;
+  --ink:#EAE5DB; --ink2:#A7B2AB; --ink3:#79847E;
+  --line:#2C3833; --line2:#243029;
+  --pine:#3FA184; --pine-soft:#1D2E29; --pine-ink:#9FD6C3;
+  --tatreez:#DB4D66; --tatreez-soft:#33202379;
+  --good:#2EA477; --bad:#DB4D66; --warn:#BE8829; --warn-soft:#2E271A;
+  --c1:#2EA477; --c2:#DB4D66; --c3:#5580DE; --c4:#BE8829; --c5:#9873D9; --c6:#CD6B40;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]):not([data-theme="dark"]){
+    --surface:#121816; --card:#1B2320; --card2:#212B27;
+    --ink:#EAE5DB; --ink2:#A7B2AB; --ink3:#79847E;
+    --line:#2C3833; --line2:#243029;
+    --pine:#3FA184; --pine-soft:#1D2E29; --pine-ink:#9FD6C3;
+    --tatreez:#DB4D66; --tatreez-soft:#33202379;
+    --good:#2EA477; --bad:#DB4D66; --warn:#BE8829; --warn-soft:#2E271A;
+    --c1:#2EA477; --c2:#DB4D66; --c3:#5580DE; --c4:#BE8829; --c5:#9873D9; --c6:#CD6B40;
+    --shadow:0 1px 3px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+body{
+  font-family:var(--font);background:var(--surface);color:var(--ink);
+  min-height:100%;font-size:15px;line-height:1.6;
+  padding-bottom:calc(84px + env(safe-area-inset-bottom));
+}
+.num{font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;display:inline-block}
+button{font-family:var(--font);cursor:pointer;border:none;background:none;color:inherit;font-size:inherit}
+input,select,textarea{
+  font-family:var(--font);font-size:16px;color:var(--ink);
+  background:var(--card2);border:1px solid var(--line);border-radius:12px;
+  padding:11px 14px;width:100%;outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--pine)}
+label{font-size:13px;font-weight:600;color:var(--ink2);display:block;margin-bottom:6px}
+.field{margin-bottom:14px}
+:focus-visible{outline:2px solid var(--pine);outline-offset:2px}
+
+/* ============ header + tatreez signature ============ */
+header{
+  background:var(--pine);color:#FAF7F1;
+  padding:calc(14px + env(safe-area-inset-top)) 20px 12px;
+  position:sticky;top:0;z-index:30;
+}
+:root[data-theme="dark"] header, :root:not([data-theme="light"]) header{color:var(--surface)}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) header{color:#FAF7F1} }
+header .bar{display:flex;align-items:baseline;justify-content:space-between;max-width:560px;margin:0 auto}
+header h1{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:.5px}
+header .month{font-size:13px;opacity:.85}
+/* the stitch band — X cross-stitches like tatreez */
+.stitches{height:10px;display:flex;justify-content:center;gap:7px;overflow:hidden;margin-top:8px}
+.stitches i{
+  width:7px;height:7px;flex:none;position:relative;opacity:.9;
+}
+.stitches i::before,.stitches i::after{
+  content:"";position:absolute;inset:0;background:var(--tatreez);
+  clip-path:polygon(0 0,18% 0,100% 82%,100% 100%,82% 100%,0 18%);
+}
+.stitches i::after{transform:scaleX(-1)}
+.stitches i:nth-child(4n+2){opacity:.45}
+.stitches i:nth-child(4n){opacity:.65}
+
+/* ============ layout ============ */
+main{max-width:560px;margin:0 auto;padding:16px 16px 8px}
+.page{display:none}
+.page.active{display:block;animation:fadein .18s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+h2.sec{font-family:var(--display);font-size:20px;margin:22px 0 10px;color:var(--ink)}
+h2.sec:first-child{margin-top:4px}
+.sec-row{display:flex;align-items:baseline;justify-content:space-between;margin:22px 0 10px}
+.sec-row h2{margin:0}
+.sec-row .link{font-size:13px;color:var(--pine);font-weight:600}
+
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
+.card.flat{box-shadow:none;border:1px solid var(--line)}
+.muted{color:var(--ink2);font-size:13px}
+.tiny{color:var(--ink3);font-size:12px}
+
+/* stat tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.tile{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 14px}
+.tile .lbl{font-size:12px;color:var(--ink2);font-weight:600}
+.tile .val{font-size:20px;font-weight:700;margin-top:2px}
+.tile .val.pos{color:var(--good)} .tile .val.neg{color:var(--bad)}
+
+/* lists */
+.list{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line2);width:100%;text-align:right}
+.row:last-child{border-bottom:none}
+.row .dot{width:36px;height:36px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font-size:17px;background:var(--card2);overflow:hidden}
+.row .dot img{width:100%;height:100%;object-fit:cover}
+.row .grow{flex:1;min-width:0}
+.row .t1{display:block;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t2{display:block;font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .amt{font-weight:700;font-size:15px;white-space:nowrap}
+.amt.pos{color:var(--good)} .amt.neg{color:var(--ink)}
+.empty{padding:28px 16px;text-align:center;color:var(--ink3);font-size:14px}
+.empty .big{font-size:30px;display:block;margin-bottom:6px}
+
+/* chips */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:7px 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--ink2)}
+.chip.on{background:var(--pine);border-color:var(--pine);color:var(--surface)}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) .chip.on{color:#FAF7F1} }
+:root[data-theme="light"] .chip.on{color:#FAF7F1}
+
+/* category grid in add-sheet */
+.catgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.catbtn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;border:1px solid var(--line);background:var(--card2);font-size:11.5px;font-weight:600;color:var(--ink2)}
+.catbtn .em{font-size:20px}
+.catbtn.on{border-color:var(--pine);background:var(--pine-soft);color:var(--pine-ink)}
+
+/* wishlist image picker */
+.wish-imgpick{width:100%;height:150px;border-radius:14px;border:1.5px dashed var(--line);background:var(--card2);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--ink2);font-size:13px;font-weight:600}
+.wish-imgpick img{width:100%;height:100%;object-fit:cover}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:14px;font-weight:700;font-size:15px}
+.btn.primary{background:var(--pine);color:#FAF7F1}
+:root[data-theme="dark"] .btn.primary{color:#0E1513}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .btn.primary{color:#0E1513} }
+.btn.ghost{border:1px solid var(--line);color:var(--ink2);background:var(--card)}
+.btn.danger{background:var(--tatreez-soft);color:var(--bad)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.5}
+.btn.sm{padding:8px 14px;font-size:13px;border-radius:11px}
+
+/* insight cards */
+.insight{display:flex;gap:10px;align-items:flex-start;background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:13px 15px;margin-bottom:10px;border-inline-start:3px solid var(--pine)}
+.insight.warn{border-inline-start-color:var(--warn)}
+.insight.bad{border-inline-start-color:var(--bad)}
+.insight.good{border-inline-start-color:var(--good)}
+.insight .em{font-size:19px;line-height:1.4}
+.insight p{font-size:13.5px;line-height:1.55}
+.insight b{font-weight:700}
+
+/* budget bars + goal stitches */
+.bar-track{height:8px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:8px}
+.bar-fill{height:100%;border-radius:99px;background:var(--pine);transition:width .4s ease}
+.bar-fill.over{background:var(--bad)}
+.bar-fill.warn{background:var(--warn)}
+/* goal progress = stitch row */
+.stitch-track{display:flex;gap:4px;margin-top:10px;flex-wrap:wrap}
+.stitch-track i{width:9px;height:9px;position:relative;flex:none}
+.stitch-track i::before,.stitch-track i::after{content:"";position:absolute;inset:0;background:var(--line);clip-path:polygon(0 0,20% 0,100% 80%,100% 100%,80% 100%,0 20%)}
+.stitch-track i::after{transform:scaleX(-1)}
+.stitch-track i.done::before,.stitch-track i.done::after{background:var(--tatreez)}
+
+/* bottom nav */
+nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:40;
+  background:var(--card);border-top:1px solid var(--line);
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+  display:flex;justify-content:space-around;align-items:center;
+}
+nav .tab{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--ink3);padding:4px 10px;border-radius:12px;min-width:56px}
+nav .tab .em{font-size:20px;line-height:1.2;filter:grayscale(1);opacity:.55}
+nav .tab.on{color:var(--pine)}
+nav .tab.on .em{filter:none;opacity:1}
+nav .fab{
+  width:52px;height:52px;border-radius:18px;background:var(--tatreez);color:#fff;
+  font-size:28px;font-weight:400;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(180,35,58,.4);margin-top:-22px;line-height:1;
+}
+
+/* sheets */
+.overlay{position:fixed;inset:0;background:rgba(15,20,18,.45);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:51;background:var(--card);
+  border-radius:22px 22px 0 0;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  transform:translateY(102%);transition:transform .25s ease;
+  padding:10px 20px calc(20px + env(safe-area-inset-bottom));
+  max-width:560px;margin:0 auto;
+}
+.sheet.open{transform:none}
+.sheet .grab{width:38px;height:4px;border-radius:99px;background:var(--line);margin:4px auto 14px}
+.sheet h3{font-family:var(--display);font-size:19px;margin-bottom:14px}
+.seg{display:flex;background:var(--card2);border-radius:12px;padding:3px;margin-bottom:14px}
+.seg button{flex:1;padding:9px;border-radius:10px;font-weight:700;font-size:14px;color:var(--ink2)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.seg button.on.exp{color:var(--bad)} .seg button.on.inc{color:var(--good)}
+.amount-input{font-size:32px;font-weight:700;text-align:center;background:none;border:none;border-bottom:2px solid var(--line);border-radius:0;padding:6px;direction:ltr}
+.amount-input:focus{border-color:var(--pine)}
+
+/* charts */
+.chart-wrap{overflow-x:auto}
+.legend{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.legend .li{display:flex;align-items:center;gap:9px;font-size:13px}
+.legend .sw{width:11px;height:11px;border-radius:4px;flex:none}
+.legend .nm{flex:1;color:var(--ink2);font-weight:600}
+.legend .vv{font-weight:700}
+.legend .pc{color:var(--ink3);font-size:12px;width:42px;text-align:left}
+table.mini{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:12px}
+table.mini th{color:var(--ink3);font-weight:600;text-align:right;padding:5px 4px;border-bottom:1px solid var(--line2)}
+table.mini td{padding:5px 4px;border-bottom:1px solid var(--line2)}
+table.mini td.n{font-variant-numeric:tabular-nums}
+
+/* ideas */
+.rec-btn{
+  width:76px;height:76px;border-radius:50%;background:var(--tatreez);color:#fff;font-size:30px;
+  display:flex;align-items:center;justify-content:center;margin:0 auto;box-shadow:0 6px 18px rgba(180,35,58,.35);
+}
+.rec-btn.recording{animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(180,35,58,.45)}70%{box-shadow:0 0 0 18px rgba(180,35,58,0)}100%{box-shadow:0 0 0 0 rgba(180,35,58,0)}}
+.idea-status{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--card2);color:var(--ink2)}
+.idea-status.s1{background:var(--pine-soft);color:var(--pine-ink)}
+.idea-status.s2{background:var(--warn-soft);color:var(--warn)}
+.idea-status.s3{background:var(--tatreez-soft);color:var(--bad)}
+.ai-box{background:var(--card2);border-radius:12px;padding:12px 14px;margin-top:10px;font-size:13.5px}
+.ai-box .stars{color:var(--warn);letter-spacing:2px}
+.ai-box ol{padding-inline-start:18px;margin-top:6px}
+.ai-box li{margin-bottom:3px}
+
+/* more page */
+.menu .row .chev{color:var(--ink3)}
+.toast{
+  position:fixed;bottom:calc(96px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:var(--surface);padding:10px 20px;border-radius:99px;font-size:13.5px;font-weight:600;
+  opacity:0;transition:all .25s;z-index:60;white-space:nowrap;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.back{font-size:13px;color:var(--pine);font-weight:700;margin-bottom:10px;display:inline-flex;align-items:center;gap:4px}
+.warn-strip{background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:10px}
+.danger-strip{background:var(--tatreez-soft);color:var(--bad);border-radius:12px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:10px}
+
+/* app lock — PIN screen */
+.lock-screen{position:fixed;inset:0;z-index:100;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.lock-icon{font-size:36px;margin-bottom:6px}
+.lock-screen h2{font-family:var(--display);font-size:21px;margin-bottom:4px}
+.lock-screen .muted{margin-bottom:18px;max-width:280px}
+.pin-dots{display:flex;gap:14px;margin-bottom:8px;height:14px}
+.pin-dots i{width:14px;height:14px;position:relative;flex:none;opacity:.25;transition:opacity .12s}
+.pin-dots i::before,.pin-dots i::after{content:"";position:absolute;inset:0;background:var(--tatreez);clip-path:polygon(0 0,18% 0,100% 82%,100% 100%,82% 100%,0 18%)}
+.pin-dots i::after{transform:scaleX(-1)}
+.pin-dots i.on{opacity:1}
+.lock-error{color:var(--bad);font-size:13px;font-weight:600;min-height:18px;margin-bottom:6px}
+.lock-screen.shake .pin-dots{animation:shake .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.keypad{display:grid;grid-template-columns:repeat(3,72px);gap:14px;margin-top:10px}
+.keypad button{width:72px;height:72px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);font-size:24px;font-weight:600;color:var(--ink)}
+.keypad button.ghost{background:none;box-shadow:none;font-size:13px;font-weight:600;color:var(--ink2)}
+.keypad button:active{background:var(--card2)}
+/* security settings row */
+.security-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line2)}
+.security-row:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <h1>مصاري</h1>
+    <span class="month" id="hdrMonth"></span>
+  </div>
+  <div class="stitches" aria-hidden="true"></div>
+</header>
+
+<main>
+  <!-- ================= HOME ================= -->
+  <section class="page active" id="page-home">
+    <div class="tiles">
+      <div class="tile"><div class="lbl">دخل الشهر</div><div class="val pos num" id="hIncome">0</div></div>
+      <div class="tile"><div class="lbl">مصروف الشهر</div><div class="val neg num" id="hSpend">0</div></div>
+      <div class="tile"><div class="lbl">الصافي</div><div class="val num" id="hNet">0</div></div>
+    </div>
+    <div id="hAlerts"></div>
+    <div id="hInsights"></div>
+    <div id="hBudgets"></div>
+    <div class="sec-row"><h2 class="sec">آخر العمليات</h2><button class="link" data-go="history">الكل ←</button></div>
+    <div class="list" id="hRecent"></div>
+  </section>
+
+  <!-- ================= HISTORY ================= -->
+  <section class="page" id="page-history">
+    <h2 class="sec">سجل العمليات</h2>
+    <div class="chips" id="histMonths"></div>
+    <div class="chips" id="histCats"></div>
+    <div class="list" id="histList"></div>
+  </section>
+
+  <!-- ================= ANALYTICS ================= -->
+  <section class="page" id="page-analytics">
+    <h2 class="sec">وين بتروح المصاري؟</h2>
+    <div class="chips" id="anMonths"></div>
+    <div class="card" id="anDonutCard"></div>
+    <h2 class="sec">الدخل مقابل المصروف</h2>
+    <div class="card" id="anTrendCard"></div>
+    <h2 class="sec">قراءة سارة 🔍</h2>
+    <div id="anInsights"></div>
+    <div class="card" id="anAICard">
+      <p class="muted" style="margin-bottom:10px">تحليل ذكي لسلوكك المالي آخر ٣ شهور — بيحتاج مفتاح Claude API من الإعدادات.</p>
+      <button class="btn primary sm" id="btnAIReview">حلليلي وضعي 🤖</button>
+      <div id="aiReviewOut" style="margin-top:12px;font-size:14px;line-height:1.8"></div>
+    </div>
+  </section>
+
+  <!-- ================= IDEAS ================= -->
+  <section class="page" id="page-ideas">
+    <h2 class="sec">بنك الأفكار</h2>
+    <div class="card" style="text-align:center;padding:22px">
+      <button class="rec-btn" id="btnRec" aria-label="سجلي فكرة صوتياً">🎙️</button>
+      <p class="muted" style="margin-top:12px" id="recHint">اكبسي وسجلي فكرتك بصوتك — بكتبها لك</p>
+      <p id="recLive" style="margin-top:8px;font-size:14px;min-height:0"></p>
+      <button class="btn ghost sm" id="btnTypeIdea" style="margin-top:10px">أو اكتبيها ✍️</button>
+    </div>
+    <div id="ideasList"></div>
+  </section>
+
+  <!-- ================= MORE (menu) ================= -->
+  <section class="page" id="page-more">
+    <h2 class="sec">المزيد</h2>
+    <div class="list menu">
+      <button class="row" data-go="subs"><span class="dot">🔁</span><span class="grow"><span class="t1">الاشتراكات</span><span class="t2" id="mSubsSummary"></span></span><span class="chev">‹</span></button>
+      <button class="row" data-go="debts"><span class="dot">🤝</span><span class="grow"><span class="t1">الديون</span><span class="t2" id="mDebtsSummary"></span></span><span class="chev">‹</span></button>
+      <button class="row" data-go="goals"><span class="dot">🎯</span><span class="grow"><span class="t1">الأهداف</span><span class="t2" id="mGoalsSummary"></span></span><span class="chev">‹</span></button>
+      <button class="row" data-go="wishlist"><span class="dot">🛒</span><span class="grow"><span class="t1">قائمة المشتريات</span><span class="t2" id="mWishSummary"></span></span><span class="chev">‹</span></button>
+      <button class="row" data-go="settings"><span class="dot">⚙️</span><span class="grow"><span class="t1">الإعدادات والنسخ الاحتياطي</span></span><span class="chev">‹</span></button>
+    </div>
+  </section>
+
+  <!-- ================= SUBSCRIPTIONS ================= -->
+  <section class="page" id="page-subs">
+    <button class="back" data-go="more">→ رجوع</button>
+    <div class="sec-row"><h2 class="sec">الاشتراكات</h2><button class="link" id="btnAddSub">+ اشتراك</button></div>
+    <div id="subsWarn"></div>
+    <div class="card flat" id="subsTotal"></div>
+    <div class="list" id="subsList"></div>
+  </section>
+
+  <!-- ================= DEBTS ================= -->
+  <section class="page" id="page-debts">
+    <button class="back" data-go="more">→ رجوع</button>
+    <div class="sec-row"><h2 class="sec">الديون</h2><button class="link" id="btnAddDebt">+ دين</button></div>
+    <div class="list" id="debtsList"></div>
+  </section>
+
+  <!-- ================= GOALS ================= -->
+  <section class="page" id="page-goals">
+    <button class="back" data-go="more">→ رجوع</button>
+    <div class="sec-row"><h2 class="sec">الأهداف</h2><button class="link" id="btnAddGoal">+ هدف</button></div>
+    <div id="goalsList"></div>
+  </section>
+
+  <!-- ================= WISHLIST ================= -->
+  <section class="page" id="page-wishlist">
+    <button class="back" data-go="more">→ رجوع</button>
+    <div class="sec-row"><h2 class="sec">قائمة المشتريات</h2><button class="link" id="btnAddWish">+ إضافة</button></div>
+    <div id="wishlistList"></div>
+  </section>
+
+  <!-- ================= SETTINGS ================= -->
+  <section class="page" id="page-settings">
+    <button class="back" data-go="more">→ رجوع</button>
+    <h2 class="sec">الإعدادات</h2>
+    <div class="card">
+      <div class="field"><label>العملة</label>
+        <select id="setCurrency">
+          <option value="₪">شيكل ₪</option><option value="$">دولار $</option>
+          <option value="د.أ">دينار د.أ</option><option value="€">يورو €</option>
+        </select>
+      </div>
+      <div class="field"><label>المظهر</label>
+        <select id="setTheme">
+          <option value="">تلقائي (حسب الجهاز)</option><option value="light">فاتح</option><option value="dark">غامق</option>
+        </select>
+      </div>
+    </div>
+    <h2 class="sec">ميزانيات الشهر (اختياري)</h2>
+    <div class="card" id="budgetInputs"></div>
+    <h2 class="sec">الذكاء الاصطناعي</h2>
+    <div class="card">
+      <div class="field"><label>مفتاح Claude API (اختياري — لتحليل الأفكار والسلوك)</label>
+        <input type="password" id="setApiKey" placeholder="sk-ant-..." dir="ltr" autocomplete="off">
+      </div>
+      <p class="tiny">المفتاح بيتخزن بقاعدة بياناتك على سيرفرك، وما بنبعث إشي لأي حدا غير Anthropic لما تطلبي تحليل.</p>
+    </div>
+    <h2 class="sec">الأمان</h2>
+    <div class="card">
+      <div class="security-row">
+        <span style="font-size:14px;font-weight:600">رمز الدخول</span>
+        <button class="btn ghost sm" id="btnChangePin">تغيير</button>
+      </div>
+      <div class="security-row">
+        <span style="font-size:14px;font-weight:600">تسجيل الخروج</span>
+        <button class="btn ghost sm" id="btnLogout">خروج</button>
+      </div>
+    </div>
+    <p class="tiny" style="margin:-4px 0 14px">بياناتك محفوظة على سيرفرك الخاص، ومحمية برمز الدخول. صدّري نسخة احتياطية كل فترة لأي طارئ.</p>
+    <h2 class="sec">بياناتك</h2>
+    <div class="card">
+      <p class="tiny" style="margin-bottom:12px">البيانات محفوظة بقاعدة بيانات على سيرفرك — اعملي نسخة احتياطية كل فترة عشان راحة بالك.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn ghost sm" id="btnExport">تصدير نسخة احتياطية ⬇</button>
+        <button class="btn ghost sm" id="btnImport">استيراد نسخة ⬆</button>
+        <input type="file" id="importFile" accept=".json" style="display:none">
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ================= NAV ================= -->
+<nav>
+  <button class="tab on" data-tab="home"><span class="em">🏠</span>الرئيسية</button>
+  <button class="tab" data-tab="analytics"><span class="em">📊</span>التحليل</button>
+  <button class="fab" id="fabAdd" aria-label="إضافة عملية">+</button>
+  <button class="tab" data-tab="ideas"><span class="em">💡</span>أفكاري</button>
+  <button class="tab" data-tab="more"><span class="em">☰</span>المزيد</button>
+</nav>
+
+<!-- ================= SHEETS ================= -->
+<div class="overlay" id="overlay"></div>
+
+<div class="sheet" id="sheet-tx">
+  <div class="grab"></div>
+  <h3 id="txTitle">عملية جديدة</h3>
+  <div class="seg" id="txTypeSeg">
+    <button data-v="exp" class="on exp">مصروف 💸</button>
+    <button data-v="inc" class="inc">دخل 💰</button>
+  </div>
+  <div class="field"><input type="text" inputmode="decimal" class="amount-input" id="txAmount" placeholder="0.00" autocomplete="off"></div>
+  <div class="field"><label>وين؟</label><div class="catgrid" id="txCats"></div></div>
+  <div class="field" id="txWhoField" style="display:none"><label>عزمتي مين؟ 😄</label><input type="text" id="txWho" placeholder="مثلاً: صحبات الجامعة"></div>
+  <div class="field"><label>ملاحظة (اختياري)</label><input type="text" id="txNote" placeholder="شو كانت؟"></div>
+  <div class="field"><label>التاريخ</label><input type="date" id="txDate"></div>
+  <button class="btn primary block" id="txSave">حفظ</button>
+  <button class="btn danger block" id="txDelete" style="margin-top:8px;display:none">حذف العملية</button>
+</div>
+
+<div class="sheet" id="sheet-sub">
+  <div class="grab"></div>
+  <h3 id="subTitle">اشتراك جديد</h3>
+  <div class="field"><label>اسم الاشتراك</label><input type="text" id="subName" placeholder="Netflix, Claude, iCloud..."></div>
+  <div class="field"><label>المبلغ</label><input type="text" inputmode="decimal" id="subAmount" placeholder="0.00" dir="ltr"></div>
+  <div class="field"><label>الدورة</label>
+    <select id="subCycle"><option value="m">شهري</option><option value="y">سنوي</option></select>
+  </div>
+  <div class="field"><label>تاريخ التجديد الجاي</label><input type="date" id="subNext"></div>
+  <div class="field"><label style="display:flex;align-items:center;gap:8px;margin:0">
+    <input type="checkbox" id="subTrial" style="width:auto"> تجربة مجانية (فكريني ألغي قبل ما ينسحب!)
+  </label></div>
+  <button class="btn primary block" id="subSave">حفظ</button>
+  <button class="btn danger block" id="subDelete" style="margin-top:8px;display:none">حذف الاشتراك</button>
+</div>
+
+<div class="sheet" id="sheet-debt">
+  <div class="grab"></div>
+  <h3 id="debtTitle">دين جديد</h3>
+  <div class="seg" id="debtDirSeg">
+    <button data-v="onMe" class="on exp">عليّ 😅</button>
+    <button data-v="toMe" class="inc">إلي 💪</button>
+  </div>
+  <div class="field"><label>لمين / من مين؟</label><input type="text" id="debtWho" placeholder="اسم الشخص أو الجهة"></div>
+  <div class="field"><label>المبلغ الكلي</label><input type="text" inputmode="decimal" id="debtAmount" placeholder="0.00" dir="ltr"></div>
+  <div class="field"><label>ملاحظة</label><input type="text" id="debtNote" placeholder="اختياري"></div>
+  <button class="btn primary block" id="debtSave">حفظ</button>
+  <button class="btn danger block" id="debtDelete" style="margin-top:8px;display:none">حذف الدين</button>
+</div>
+
+<div class="sheet" id="sheet-goal">
+  <div class="grab"></div>
+  <h3 id="goalTitle">هدف جديد</h3>
+  <div class="field"><label>شو الهدف؟</label><input type="text" id="goalName" placeholder="سفرة، لابتوب، صدقة شهرية..."></div>
+  <div class="field"><label>المبلغ المطلوب</label><input type="text" inputmode="decimal" id="goalTarget" placeholder="0.00" dir="ltr"></div>
+  <button class="btn primary block" id="goalSave">حفظ</button>
+  <button class="btn danger block" id="goalDelete" style="margin-top:8px;display:none">حذف الهدف</button>
+</div>
+
+<div class="sheet" id="sheet-wish">
+  <div class="grab"></div>
+  <h3 id="wishTitle">شي بدي أشتريه</h3>
+  <div class="field">
+    <label>صورة (اختياري)</label>
+    <div class="wish-imgpick" id="wishImgPick">
+      <img id="wishImgPreview" style="display:none">
+      <span id="wishImgPlaceholder">📷 ضيفي صورة</span>
+    </div>
+    <input type="file" accept="image/*" id="wishImgFile" style="display:none">
+    <button class="btn ghost sm" id="wishImgRemove" style="display:none;margin-top:8px">شيلي الصورة</button>
+  </div>
+  <div class="field"><label>شو هو؟</label><input type="text" id="wishName" placeholder="مثلاً: سماعات، كتاب، لابتوب..."></div>
+  <div class="field"><label>السعر المتوقع</label><input type="text" inputmode="decimal" id="wishPrice" placeholder="0.00" dir="ltr"></div>
+  <div class="field"><label>ملاحظة (اختياري)</label><input type="text" id="wishNote" placeholder="وين شفتها، أو أي تفصيل"></div>
+  <button class="btn primary block" id="wishSave">حفظ</button>
+  <button class="btn danger block" id="wishDelete" style="margin-top:8px;display:none">حذف من القائمة</button>
+</div>
+
+<div class="sheet" id="sheet-idea">
+  <div class="grab"></div>
+  <h3>فكرة جديدة ✨</h3>
+  <div class="field"><label>عنوان الفكرة</label><input type="text" id="ideaTitle" placeholder="بيتلخّص تلقائياً من كلامك"></div>
+  <div class="field"><label>التفاصيل</label><textarea id="ideaBody" rows="5" placeholder="احكي أو اكتبي كل إشي بخطر ببالك..."></textarea></div>
+  <button class="btn primary block" id="ideaSave">حفظ الفكرة</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="lock-screen" id="lockScreen" style="display:none" role="dialog" aria-modal="true" aria-label="قفل التطبيق">
+  <div class="lock-icon">🔒</div>
+  <h2 id="lockTitle">أدخلي الرمز السري</h2>
+  <p class="muted" id="lockSub">&nbsp;</p>
+  <div class="pin-dots" id="pinDots"></div>
+  <p class="lock-error" id="lockError">&nbsp;</p>
+  <div class="keypad" id="keypad">
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+    <button class="ghost" data-k="cancel" id="lockCancel">إلغاء</button><button data-k="0">0</button><button data-k="back">⌫</button>
+  </div>
+</div>
+
+<script>
+/* =================================================================
+   مصاري — personal finance & ideas companion
+   Data lives in a SQLite database behind a small API, guarded by a
+   password login. No third-party servers, no tracking.
+================================================================= */
+'use strict';
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+
+/* ---------- categories ---------- */
+const CATS = {
+  exp: [
+    {id:'food',   nm:'أكل',       em:'🍔'},
+    {id:'trans',  nm:'مواصلات',   em:'🚌'},
+    {id:'uni',    nm:'جامعة',     em:'🎓'},
+    {id:'subs',   nm:'اشتراكات',  em:'🔁'},
+    {id:'azayem', nm:'عزايم',     em:'🍽️'},
+    {id:'sadaqa', nm:'صدقة',      em:'🤲'},
+    {id:'family', nm:'عيلة',      em:'🏡'},
+    {id:'debt',   nm:'سداد دين',  em:'🤝'},
+    {id:'shop',   nm:'تسوّق',     em:'🛍️'},
+    {id:'health', nm:'صحة',       em:'💊'},
+    {id:'goal',   nm:'توفير لهدف',em:'🎯'},
+    {id:'other',  nm:'غير هيك',   em:'📦'},
+  ],
+  inc: [
+    {id:'project',nm:'مشروع',     em:'💼'},
+    {id:'fixed',  nm:'دخل ثابت',  em:'📆'},
+    {id:'debtback',nm:'رجعولي دين',em:'🤝'},
+    {id:'iother', nm:'غير هيك',   em:'💵'},
+  ]
+};
+const catOf = id => [...CATS.exp,...CATS.inc].find(c=>c.id===id) || {nm:'غير هيك',em:'📦',id:'other'};
+const CHART_COLORS = ['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c6)'];
+
+/* ---------- store (server API) ---------- */
+const emptyDB = () => ({ settings:{currency:'₪',theme:'',apiKey:'',budgets:{}}, tx:[], subs:[], debts:[], goals:[], ideas:[], wishlist:[] });
+let db = emptyDB();
+const api = (path, opts) => fetch('/api'+path, {credentials:'include', headers:{'content-type':'application/json'}, ...opts});
+let saveTimer=null, saveFailed=false;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    try{
+      const r = await api('/state', {method:'PUT', body:JSON.stringify(db)});
+      if(!r.ok) throw 0;
+      saveFailed=false;
+    }catch(e){
+      if(!saveFailed) toast('ما انحفظ عالسيرفر — تأكدي من الاتصال بالنت 📡');
+      saveFailed=true;
+    }
+  }, 200);
+}
+
+/* ---------- helpers ---------- */
+const cur = () => db.settings.currency || '₪';
+const fmt = n => new Intl.NumberFormat('en-US',{maximumFractionDigits:1}).format(n||0);
+const money = n => `${fmt(n)} ${cur()}`;
+const todayISO = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const ym = iso => iso.slice(0,7);
+const thisYM = () => todayISO().slice(0,7);
+const MONTHS_AR = ['كانون ٢','شباط','آذار','نيسان','أيار','حزيران','تموز','آب','أيلول','تشرين ١','تشرين ٢','كانون ١'];
+const ymLabel = y => { const [Y,M]=y.split('-'); return MONTHS_AR[+M-1]+' '+Y.slice(2); };
+const dayLabel = iso => { const d=new Date(iso+'T12:00'); const wd=new Intl.DateTimeFormat('ar',{weekday:'long'}).format(d); return `${wd}، ${d.getDate()} ${MONTHS_AR[d.getMonth()]}`; };
+const daysUntil = iso => Math.ceil((new Date(iso+'T12:00') - new Date())/(864e5));
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2200); }
+const esc = s => (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => { const n = parseFloat(String(v).replace(/[^\d.]/g,'')); return isNaN(n)?0:n; };
+
+/* =================================================================
+   LOGIN — password checked server-side (bcrypt), session cookie.
+   The same PIN-pad UI doubles as: first-run setup, unlock, and
+   change-password, driven against the /api/* auth endpoints.
+================================================================= */
+const PIN_LEN = 6;
+let lockMode = 'unlock'; /* unlock | setup | setup-confirm | change-verify | change-new | change-confirm */
+let pinBuf = '', pinFirstEntry = '', changeOldPin = '';
+let cooldownUntil = 0;
+
+function renderPinDots(){
+  $('#pinDots').innerHTML = Array.from({length:PIN_LEN},(_,i)=>`<i class="${i<pinBuf.length?'on':''}"></i>`).join('');
+}
+function lockError(msg){
+  $('#lockError').textContent = msg || ' ';
+  if(msg){ const ls=$('#lockScreen'); ls.classList.add('shake'); setTimeout(()=>ls.classList.remove('shake'),350); }
+}
+function showLock(mode, title, sub, showCancel){
+  lockMode = mode; pinBuf=''; renderPinDots(); lockError('');
+  $('#lockTitle').textContent = title;
+  $('#lockSub').textContent = sub || ' ';
+  $('#lockCancel').style.visibility = showCancel ? 'visible' : 'hidden';
+  $('#lockScreen').style.display='flex';
+}
+function hideLock(){ $('#lockScreen').style.display='none'; }
+function onLockCancel(){
+  pinBuf=''; renderPinDots();
+  if(lockMode!=='unlock' && lockMode!=='setup' && lockMode!=='setup-confirm'){ hideLock(); renderSettings(); }
+}
+async function afterAuth(){
+  const r = await api('/state');
+  if(r.ok){ const data = await r.json(); if(data) db = data; }
+  db.wishlist = db.wishlist || [];
+  hideLock(); applyTheme(); render('home');
+}
+async function submitPin(){
+  if(Date.now()<cooldownUntil){ lockError('استنى شوي وجربي مرة تانية'); pinBuf=''; renderPinDots(); return; }
+  const pin = pinBuf;
+  if(lockMode==='setup'){
+    pinFirstEntry = pin;
+    showLock('setup-confirm','أكدي رمز الدخول','اكتبيه مرة ثانية عشان نتأكد', false);
+    return;
+  }
+  if(lockMode==='setup-confirm'){
+    if(pin!==pinFirstEntry){ lockError('الرمزين مش متطابقين — من جديد'); showLock('setup','رحّبي فيكي! اختاري رمز دخول من ٦ أرقام','رح تحتاجيه كل مرة تفتحي فيها مصاري', false); return; }
+    const r = await api('/setup', {method:'POST', body:JSON.stringify({password:pin})});
+    if(r.ok){ await afterAuth(); }
+    else { lockError('صار خلل، جربي كمان مرة'); showLock('setup','رحّبي فيكي! اختاري رمز دخول من ٦ أرقام','رح تحتاجيه كل مرة تفتحي فيها مصاري', false); }
+    return;
+  }
+  if(lockMode==='unlock'){
+    const r = await api('/login', {method:'POST', body:JSON.stringify({password:pin})});
+    if(r.ok){ await afterAuth(); }
+    else if(r.status===429){
+      const j = await r.json().catch(()=>({wait:30}));
+      cooldownUntil = Date.now()+(j.wait||30)*1000;
+      pinBuf=''; renderPinDots(); lockError('كتير محاولات غلط — استنى شوي');
+    } else { pinBuf=''; renderPinDots(); lockError('الرمز غلط، جربي كمان مرة'); }
+    return;
+  }
+  if(lockMode==='change-verify'){
+    changeOldPin = pin;
+    showLock('change-new','اكتبي رمز الدخول الجديد','', true);
+    return;
+  }
+  if(lockMode==='change-new'){
+    pinFirstEntry = pin;
+    showLock('change-confirm','أكدي الرمز الجديد','', true);
+    return;
+  }
+  if(lockMode==='change-confirm'){
+    if(pin!==pinFirstEntry){ lockError('الرمزين مش متطابقين'); showLock('change-new','اكتبي رمز الدخول الجديد','', true); return; }
+    const r = await api('/change-password', {method:'POST', body:JSON.stringify({oldPassword:changeOldPin, newPassword:pin})});
+    if(r.ok){ hideLock(); toast('اتغيّر رمز الدخول ✅'); renderSettings(); }
+    else { lockError('الرمز الحالي غلط'); showLock('change-verify','أدخلي رمز الدخول الحالي','', true); }
+    return;
+  }
+}
+$('#keypad').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const k=b.dataset.k;
+  if(k==='cancel'){ onLockCancel(); return; }
+  if(k==='back'){ pinBuf=pinBuf.slice(0,-1); renderPinDots(); lockError(''); return; }
+  if(pinBuf.length>=PIN_LEN) return;
+  pinBuf+=k; renderPinDots();
+  if(pinBuf.length===PIN_LEN) submitPin();
+});
+document.addEventListener('keydown', e=>{
+  if($('#lockScreen').style.display!=='flex') return;
+  if(/^[0-9]$/.test(e.key) && pinBuf.length<PIN_LEN){ pinBuf+=e.key; renderPinDots(); if(pinBuf.length===PIN_LEN) submitPin(); }
+  else if(e.key==='Backspace'){ pinBuf=pinBuf.slice(0,-1); renderPinDots(); }
+});
+$('#btnChangePin').addEventListener('click', ()=>{
+  showLock('change-verify','أدخلي رمز الدخول الحالي','', true);
+});
+$('#btnLogout').addEventListener('click', async ()=>{
+  await api('/logout', {method:'POST'});
+  db = emptyDB();
+  showLock('unlock','أدخلي رمز الدخول','', false);
+});
+async function boot(){
+  $('.stitches').innerHTML = Array.from({length:40},()=>'<i></i>').join('');
+  try{
+    const status = await api('/status').then(r=>r.json());
+    if(!status.hasPassword) showLock('setup','رحّبي فيكي! اختاري رمز دخول من ٦ أرقام','رح تحتاجيه كل مرة تفتحي فيها مصاري', false);
+    else if(!status.authenticated) showLock('unlock','أدخلي رمز الدخول','', false);
+    else await afterAuth();
+  }catch(e){
+    showLock('unlock','ما قدرت أوصل للسيرفر','تأكدي إنه شغال وجربي تحدّثي الصفحة', false);
+  }
+  if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+}
+
+/* month aggregations */
+const txIn = (y) => db.tx.filter(t=>ym(t.date)===y);
+const sumBy = (list,f) => list.reduce((a,t)=>a+(f(t)?t.amount:0),0);
+const monthSpend = y => sumBy(txIn(y), t=>t.type==='exp');
+const monthIncome = y => sumBy(txIn(y), t=>t.type==='inc');
+function spendByCat(y){
+  const m={};
+  txIn(y).filter(t=>t.type==='exp').forEach(t=>{ m[t.cat]=(m[t.cat]||0)+t.amount; });
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+}
+function lastMonths(n){
+  const out=[]; const d=new Date();
+  for(let i=n-1;i>=0;i--){ const x=new Date(d.getFullYear(),d.getMonth()-i,1); out.push(x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')); }
+  return out;
+}
+const subMonthly = s => s.cycle==='y' ? s.amount/12 : s.amount;
+
+/* =================================================================
+   ROUTER
+================================================================= */
+const TABS = {home:'home', analytics:'analytics', ideas:'ideas', more:'more'};
+let currentPage = 'home';
+function go(page){
+  currentPage = page;
+  $$('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+page));
+  const tab = TABS[page] ? page : (['subs','debts','goals','wishlist','settings'].includes(page)?'more':page);
+  $$('nav .tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===tab));
+  window.scrollTo(0,0);
+  render(page);
+}
+document.addEventListener('click', e=>{
+  const g = e.target.closest('[data-go]'); if(g){ go(g.dataset.go); }
+  const t = e.target.closest('nav .tab'); if(t){ go(t.dataset.tab); }
+});
+
+/* =================================================================
+   SHEETS
+================================================================= */
+function openSheet(id){ $('#overlay').classList.add('open'); $('#'+id).classList.add('open'); }
+function closeSheets(){ $('#overlay').classList.remove('open'); $$('.sheet').forEach(s=>s.classList.remove('open')); stopRec(); }
+$('#overlay').addEventListener('click', closeSheets);
+
+/* ---------- transaction sheet ---------- */
+let txState = {type:'exp', cat:'food', editId:null, wishId:null};
+function renderTxCats(){
+  const grid=$('#txCats');
+  grid.innerHTML = CATS[txState.type].map(c=>
+    `<button class="catbtn ${c.id===txState.cat?'on':''}" data-cat="${c.id}"><span class="em">${c.em}</span>${c.nm}</button>`).join('');
+  $('#txWhoField').style.display = txState.cat==='azayem' ? '' : 'none';
+}
+$('#txCats').addEventListener('click', e=>{
+  const b=e.target.closest('[data-cat]'); if(!b) return;
+  txState.cat=b.dataset.cat; renderTxCats();
+});
+$('#txTypeSeg').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  txState.type=b.dataset.v; txState.cat=CATS[txState.type][0].id;
+  $$('#txTypeSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  renderTxCats();
+});
+function openTxSheet(tx){
+  txState = tx ? {type:tx.type, cat:tx.cat, editId:tx.id, wishId:null} : {type:'exp', cat:'food', editId:null, wishId:null};
+  $('#txTitle').textContent = tx ? 'تعديل العملية' : 'عملية جديدة';
+  $$('#txTypeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.v===txState.type));
+  $('#txAmount').value = tx ? tx.amount : '';
+  $('#txNote').value = tx ? (tx.note||'') : '';
+  $('#txWho').value = tx ? (tx.who||'') : '';
+  $('#txDate').value = tx ? tx.date : todayISO();
+  $('#txDelete').style.display = tx ? '' : 'none';
+  renderTxCats();
+  openSheet('sheet-tx');
+  if(!tx) setTimeout(()=>$('#txAmount').focus(),250);
+}
+function openTxSheetForWish(item){
+  txState = {type:'exp', cat:'shop', editId:null, wishId:item.id};
+  $('#txTitle').textContent = 'اشتريتها؟ 🛍️';
+  $$('#txTypeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.v==='exp'));
+  $('#txAmount').value = item.price || '';
+  $('#txNote').value = item.name || '';
+  $('#txWho').value = '';
+  $('#txDate').value = todayISO();
+  $('#txDelete').style.display = 'none';
+  renderTxCats();
+  openSheet('sheet-tx');
+}
+$('#fabAdd').addEventListener('click', ()=>openTxSheet(null));
+$('#txSave').addEventListener('click', ()=>{
+  const amount = num($('#txAmount').value);
+  if(!amount){ toast('حطي المبلغ أول 🙂'); return; }
+  const rec = {
+    id: txState.editId || uid(), type: txState.type, cat: txState.cat,
+    amount, note: $('#txNote').value.trim(), who: $('#txWho').value.trim(),
+    date: $('#txDate').value || todayISO(),
+  };
+  if(txState.editId){ db.tx = db.tx.map(t=>t.id===rec.id?rec:t); } else { db.tx.push(rec); }
+  if(txState.wishId){
+    const item = db.wishlist.find(w=>w.id===txState.wishId);
+    if(item){ item.bought=true; item.boughtTxId=rec.id; item.boughtDate=rec.date; }
+  }
+  save(); closeSheets(); render(currentPage);
+  toast(txState.wishId ? 'مبروك الشرا! 🎉 انحسبت من مصاريفك' : txState.editId ? 'تعدّلت ✅' : (rec.type==='exp'?'انحسبت 📝':'أهلاً بالمصاري 🤑'));
+});
+$('#txDelete').addEventListener('click', ()=>{
+  db.tx = db.tx.filter(t=>t.id!==txState.editId);
+  save(); closeSheets(); render(currentPage); toast('انحذفت');
+});
+
+/* ---------- subscription sheet ---------- */
+let subEditId=null;
+function openSubSheet(s){
+  subEditId = s ? s.id : null;
+  $('#subTitle').textContent = s?'تعديل الاشتراك':'اشتراك جديد';
+  $('#subName').value = s?s.name:''; $('#subAmount').value = s?s.amount:'';
+  $('#subCycle').value = s?s.cycle:'m'; $('#subNext').value = s?s.next:todayISO();
+  $('#subTrial').checked = s?!!s.trial:false;
+  $('#subDelete').style.display = s?'':'none';
+  openSheet('sheet-sub');
+}
+$('#btnAddSub').addEventListener('click', ()=>openSubSheet(null));
+$('#subSave').addEventListener('click', ()=>{
+  const name=$('#subName').value.trim(); const amount=num($('#subAmount').value);
+  if(!name||!amount){ toast('الاسم والمبلغ ضروريين'); return; }
+  const rec={id:subEditId||uid(), name, amount, cycle:$('#subCycle').value, next:$('#subNext').value||todayISO(), trial:$('#subTrial').checked};
+  if(subEditId){ db.subs=db.subs.map(s=>s.id===rec.id?rec:s); } else db.subs.push(rec);
+  save(); closeSheets(); render('subs'); toast('تمام ✅');
+});
+$('#subDelete').addEventListener('click', ()=>{
+  db.subs=db.subs.filter(s=>s.id!==subEditId); save(); closeSheets(); render('subs'); toast('انحذف — مصاري رجعت 🎉');
+});
+
+/* ---------- debt sheet ---------- */
+let debtEditId=null, debtDir='onMe';
+$('#debtDirSeg').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  debtDir=b.dataset.v; $$('#debtDirSeg button').forEach(x=>x.classList.toggle('on',x===b));
+});
+function openDebtSheet(d){
+  debtEditId=d?d.id:null; debtDir=d?d.dir:'onMe';
+  $('#debtTitle').textContent=d?'تعديل الدين':'دين جديد';
+  $$('#debtDirSeg button').forEach(x=>x.classList.toggle('on',x.dataset.v===debtDir));
+  $('#debtWho').value=d?d.who:''; $('#debtAmount').value=d?d.total:''; $('#debtNote').value=d?(d.note||''):'';
+  $('#debtDelete').style.display=d?'':'none';
+  openSheet('sheet-debt');
+}
+$('#btnAddDebt').addEventListener('click', ()=>openDebtSheet(null));
+$('#debtSave').addEventListener('click', ()=>{
+  const who=$('#debtWho').value.trim(); const total=num($('#debtAmount').value);
+  if(!who||!total){ toast('الاسم والمبلغ ضروريين'); return; }
+  if(debtEditId){
+    db.debts=db.debts.map(d=>d.id===debtEditId?{...d,who,total,dir:debtDir,note:$('#debtNote').value.trim()}:d);
+  } else {
+    db.debts.push({id:uid(),who,total,dir:debtDir,note:$('#debtNote').value.trim(),paid:0});
+  }
+  save(); closeSheets(); render('debts'); toast('تمام ✅');
+});
+$('#debtDelete').addEventListener('click', ()=>{
+  db.debts=db.debts.filter(d=>d.id!==debtEditId); save(); closeSheets(); render('debts'); toast('انحذف');
+});
+
+/* ---------- goal sheet ---------- */
+let goalEditId=null;
+function openGoalSheet(g){
+  goalEditId=g?g.id:null;
+  $('#goalTitle').textContent=g?'تعديل الهدف':'هدف جديد';
+  $('#goalName').value=g?g.name:''; $('#goalTarget').value=g?g.target:'';
+  $('#goalDelete').style.display=g?'':'none';
+  openSheet('sheet-goal');
+}
+$('#btnAddGoal').addEventListener('click', ()=>openGoalSheet(null));
+$('#goalSave').addEventListener('click', ()=>{
+  const name=$('#goalName').value.trim(); const target=num($('#goalTarget').value);
+  if(!name||!target){ toast('الاسم والمبلغ ضروريين'); return; }
+  if(goalEditId){ db.goals=db.goals.map(g=>g.id===goalEditId?{...g,name,target}:g); }
+  else db.goals.push({id:uid(),name,target,saved:0});
+  save(); closeSheets(); render('goals'); toast('هدف جديد 🎯');
+});
+$('#goalDelete').addEventListener('click', ()=>{
+  db.goals=db.goals.filter(g=>g.id!==goalEditId); save(); closeSheets(); render('goals'); toast('انحذف');
+});
+
+/* ---------- wishlist sheet ---------- */
+let wishEditId=null, wishImg=null;
+function compressImage(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = ()=>{
+      img.onerror = reject;
+      img.onload = ()=>{
+        const scale = Math.min(1, maxDim/Math.max(img.width, img.height));
+        const w = Math.round(img.width*scale), h = Math.round(img.height*scale);
+        const c = document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function setWishImgPreview(dataURL){
+  wishImg = dataURL;
+  $('#wishImgPreview').src = dataURL || '';
+  $('#wishImgPreview').style.display = dataURL ? '' : 'none';
+  $('#wishImgPlaceholder').style.display = dataURL ? 'none' : '';
+  $('#wishImgRemove').style.display = dataURL ? '' : 'none';
+}
+$('#wishImgPick').addEventListener('click', ()=>$('#wishImgFile').click());
+$('#wishImgFile').addEventListener('change', async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  try{ setWishImgPreview(await compressImage(f, 480, 0.72)); }
+  catch(err){ toast('ما قدرت أحمّل الصورة'); }
+  e.target.value='';
+});
+$('#wishImgRemove').addEventListener('click', ()=>setWishImgPreview(null));
+function openWishSheet(item){
+  wishEditId = item ? item.id : null;
+  $('#wishTitle').textContent = item ? 'تعديل' : 'شي بدي أشتريه';
+  $('#wishName').value = item ? item.name : '';
+  $('#wishPrice').value = item ? item.price : '';
+  $('#wishNote').value = item ? (item.note||'') : '';
+  setWishImgPreview(item ? (item.image||null) : null);
+  $('#wishDelete').style.display = item ? '' : 'none';
+  openSheet('sheet-wish');
+}
+$('#btnAddWish').addEventListener('click', ()=>openWishSheet(null));
+$('#wishSave').addEventListener('click', ()=>{
+  const name=$('#wishName').value.trim(); const price=num($('#wishPrice').value);
+  if(!name){ toast('حطي اسم الشي أول 🙂'); return; }
+  const note=$('#wishNote').value.trim();
+  if(wishEditId){
+    db.wishlist=db.wishlist.map(w=>w.id===wishEditId?{...w,name,price,note,image:wishImg}:w);
+  } else {
+    db.wishlist.push({id:uid(),name,price,note,image:wishImg,date:todayISO(),bought:false,boughtTxId:null});
+  }
+  save(); closeSheets(); render('wishlist'); toast('تمام ✅');
+});
+$('#wishDelete').addEventListener('click', ()=>{
+  db.wishlist=db.wishlist.filter(w=>w.id!==wishEditId); save(); closeSheets(); render('wishlist'); toast('انحذف');
+});
+
+/* ---------- idea sheet ---------- */
+$('#btnTypeIdea').addEventListener('click', ()=>{ $('#ideaTitle').value=''; $('#ideaBody').value=''; openSheet('sheet-idea'); });
+$('#ideaSave').addEventListener('click', ()=>{
+  const body=$('#ideaBody').value.trim();
+  if(!body){ toast('اكتبي الفكرة أول 🙂'); return; }
+  const title=$('#ideaTitle').value.trim() || body.split(/\s+/).slice(0,6).join(' ');
+  db.ideas.unshift({id:uid(), title, body, date:todayISO(), status:'new', ai:null});
+  save(); closeSheets(); render('ideas'); toast('انحفظت الفكرة 💡');
+});
+
+/* =================================================================
+   VOICE RECORDING (Web Speech API)
+================================================================= */
+let rec=null, recOn=false, recText='';
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+function stopRec(){
+  if(rec){ try{rec.stop();}catch(e){} }
+  recOn=false; $('#btnRec').classList.remove('recording'); $('#btnRec').textContent='🎙️';
+}
+$('#btnRec').addEventListener('click', ()=>{
+  if(recOn){ stopRec(); return; }
+  if(!SR){ toast('التسجيل الصوتي مش مدعوم هون — اكتبيها ✍️'); openSheet('sheet-idea'); return; }
+  recText='';
+  rec = new SR();
+  rec.lang='ar'; rec.continuous=true; rec.interimResults=true;
+  rec.onresult = e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) recText += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    $('#recLive').textContent = recText + interim;
+  };
+  rec.onerror = e=>{
+    stopRec();
+    if(e.error==='not-allowed') toast('اسمحيلي أوصل للمايك من إعدادات المتصفح 🎙️');
+    else toast('ما زبط التسجيل — جربي كمان مرة أو اكتبيها');
+  };
+  rec.onend = ()=>{
+    if(recOn){ stopRec(); }
+    const text=(recText||$('#recLive').textContent).trim();
+    $('#recLive').textContent='';
+    if(text){
+      $('#ideaTitle').value = text.split(/\s+/).slice(0,6).join(' ');
+      $('#ideaBody').value = text;
+      openSheet('sheet-idea');
+    }
+  };
+  try{
+    rec.start(); recOn=true;
+    $('#btnRec').classList.add('recording'); $('#btnRec').textContent='⏹';
+    $('#recHint').textContent='عم أسمعك... اكبسي مرة تانية لما تخلصي';
+  }catch(e){ toast('ما قدرت أشغل المايك'); }
+});
+
+/* =================================================================
+   CLAUDE AI (optional)
+================================================================= */
+async function askClaude(system, userMsg, maxTokens){
+  const key = db.settings.apiKey;
+  if(!key){ toast('حطي مفتاح Claude API بالإعدادات أول'); go('settings'); throw new Error('no-key'); }
+  const res = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'content-type':'application/json',
+      'x-api-key':key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true',
+    },
+    body: JSON.stringify({
+      model:'claude-sonnet-5', max_tokens:maxTokens||1200,
+      system, messages:[{role:'user',content:userMsg}],
+    }),
+  });
+  if(!res.ok){ const err=await res.text(); throw new Error('api '+res.status+' '+err.slice(0,200)); }
+  const data = await res.json();
+  return data.content.map(b=>b.text||'').join('');
+}
+async function analyzeIdea(id){
+  const idea = db.ideas.find(i=>i.id===id); if(!idea) return;
+  const btn = document.querySelector(`[data-analyze="${id}"]`);
+  if(btn){ btn.disabled=true; btn.textContent='عم أفكر...'; }
+  try{
+    const out = await askClaude(
+      'أنت مستشارة أعمال فلسطينية عملية وصريحة. المستخدمة اسمها سارة، طالبة جامعية وصاحبة مشاريع صغيرة في فلسطين، دخلها غير منتظم. حللي فكرتها وردي حصراً بصيغة JSON بدون أي نص إضافي: {"priority": رقم من 1 لـ5 (5 أعلى أولوية), "verdict": "جملة حكم صريحة بالعامية", "feasibility": "جملتين عن قابلية التنفيذ في السوق الفلسطيني والتكلفة المبدئية", "first_steps": ["خطوة عملية أولى","ثانية","ثالثة"]}',
+      'الفكرة: ' + idea.body, 800
+    );
+    const m = out.match(/\{[\s\S]*\}/);
+    idea.ai = JSON.parse(m ? m[0] : out);
+    save(); render('ideas'); toast('حللتها لك 🤖');
+  }catch(e){
+    if(e.message!=='no-key') toast('ما زبط التحليل — تأكدي من المفتاح والنت');
+    if(btn){ btn.disabled=false; btn.textContent='حلليها 🤖'; }
+  }
+}
+$('#btnAIReview').addEventListener('click', async ()=>{
+  const btn=$('#btnAIReview'); const out=$('#aiReviewOut');
+  const months = lastMonths(3);
+  const summary = months.map(y=>{
+    const cats = spendByCat(y).map(([c,v])=>`${catOf(c).nm}: ${Math.round(v)}`).join('، ');
+    return `شهر ${ymLabel(y)}: دخل ${Math.round(monthIncome(y))}، مصروف ${Math.round(monthSpend(y))} (${cats||'بدون مصاريف'})`;
+  }).join('\n');
+  const subs = db.subs.map(s=>`${s.name}: ${Math.round(subMonthly(s))}/شهر${s.trial?' (تجربة)':''}`).join('، ')||'ما في';
+  const debts = db.debts.map(d=>`${d.dir==='onMe'?'عليها':'إلها'} ${Math.round(d.total-d.paid)} (${d.who})`).join('، ')||'ما في';
+  const goals = db.goals.map(g=>`${g.name}: ${Math.round(g.saved)}/${Math.round(g.target)}`).join('، ')||'ما في';
+  btn.disabled=true; btn.textContent='عم أحلل...';
+  try{
+    const text = await askClaude(
+      'أنت صاحبة سارة ومستشارتها المالية. سارة طالبة فلسطينية، دخلها من مشاريع غير منتظمة، بتحب تعزم وبتصرف كتير وبتنسى تلغي اشتراكات. احكي معها بالعامية الفلسطينية، بصراحة وحنية، بدون مواعظ. حلليلها وضعها بـ4-6 جمل: وين رايحة مصاريها، شو النمط اللي لازم تنتبهله، ونصيحة أو نصيحتين عمليتين محددتين بالأرقام. العملة: ' + cur(),
+      `بيانات آخر ٣ شهور:\n${summary}\nالاشتراكات: ${subs}\nالديون: ${debts}\nالأهداف: ${goals}`, 1000
+    );
+    out.textContent = text;
+  }catch(e){
+    if(e.message!=='no-key') out.textContent='ما قدرت أوصل للـAPI — تأكدي من المفتاح والإنترنت.';
+  }
+  btn.disabled=false; btn.textContent='حلليلي وضعي 🤖';
+});
+
+/* =================================================================
+   INSIGHTS ENGINE (rules, offline)
+================================================================= */
+function buildInsights(){
+  const out=[];
+  const y=thisYM(), months=lastMonths(4), prev3=months.slice(0,3);
+  const inc=monthIncome(y), sp=monthSpend(y);
+
+  /* trial subscriptions about to charge */
+  db.subs.filter(s=>s.trial && daysUntil(s.next)<=7 && daysUntil(s.next)>=-3).forEach(s=>{
+    const d=daysUntil(s.next);
+    out.push({em:'🚨',cls:'bad',html:`تجربة <b>${esc(s.name)}</b> ${d<=0?'خلصت!':`بتخلص بعد <b>${d} أيام</b>`} — ألغي قبل ما ينسحب <b>${money(s.amount)}</b>.`});
+  });
+  /* upcoming renewals */
+  db.subs.filter(s=>!s.trial && daysUntil(s.next)>=0 && daysUntil(s.next)<=5).forEach(s=>{
+    out.push({em:'🔁',cls:'warn',html:`اشتراك <b>${esc(s.name)}</b> بتجدد بعد ${daysUntil(s.next)||'أقل من'} أيام (<b>${money(s.amount)}</b>). لسا بدك ياه؟`});
+  });
+  /* category spike vs avg of prev 3 months */
+  spendByCat(y).forEach(([cat,val])=>{
+    const avg = prev3.reduce((a,m)=>a+(spendByCat(m).find(x=>x[0]===cat)||[0,0])[1],0)/3;
+    if(avg>0 && val>avg*1.35 && val-avg>30){
+      out.push({em:'📈',cls:'warn',html:`صرفك على <b>${catOf(cat).nm}</b> هالشهر <b>${money(val)}</b> — أعلى بـ<b>${Math.round((val/avg-1)*100)}%</b> من معدلك. شو صاير؟ 👀`});
+    }
+  });
+  /* big single expense */
+  if(inc>0){
+    const big = txIn(y).filter(t=>t.type==='exp' && t.amount>inc*0.3).sort((a,b)=>b.amount-a.amount)[0];
+    if(big) out.push({em:'💥',cls:'warn',html:`مصروف واحد (<b>${catOf(big.cat).nm}${big.note?' — '+esc(big.note):''}</b>) أكل <b>${Math.round(big.amount/inc*100)}%</b> من دخل الشهر. هاد النمط اللي حكينا عنه.`});
+  }
+  /* subscriptions burden */
+  const subsTotal = db.subs.reduce((a,s)=>a+subMonthly(s),0);
+  const avgInc = prev3.reduce((a,m)=>a+monthIncome(m),0)/3 || inc;
+  if(avgInc>0 && subsTotal/avgInc>0.15){
+    out.push({em:'🔁',cls:'warn',html:`اشتراكاتك <b>${money(subsTotal)}</b> شهرياً = <b>${Math.round(subsTotal/avgInc*100)}%</b> من معدل دخلك. في إشي بتقدري تلغيه؟`});
+  }
+  /* azayem this month */
+  const az = sumBy(txIn(y), t=>t.type==='exp'&&t.cat==='azayem');
+  if(az>0) out.push({em:'🍽️',cls:'',html:`عزمتي بـ<b>${money(az)}</b> هالشهر. كرمك على راسنا — بس خليه بالميزانية 😄`});
+  /* sadaqa nudge */
+  const sd = sumBy(txIn(y), t=>t.type==='exp'&&t.cat==='sadaqa');
+  if(sd>0) out.push({em:'🤲',cls:'good',html:`طلّعتي <b>${money(sd)}</b> لوجه الله هالشهر. يبارك فيكي 🤍`});
+  else if(db.tx.length>3) out.push({em:'🤲',cls:'',html:`لسا ما سجلتي صدقة هالشهر — حتى إشي بسيط بفرق.`});
+  /* net status */
+  if(inc>0 && sp>inc) out.push({em:'⚠️',cls:'bad',html:`صرفت أكتر من دخلك هالشهر بـ<b>${money(sp-inc)}</b>. وقت التهدئة 🫶`});
+  else if(inc>0 && sp<inc*0.7 && sp>0) out.push({em:'🌱',cls:'good',html:`مأمنة <b>${money(inc-sp)}</b> لحد هلأ هالشهر — بتقدري تحطي جزء بهدف؟`});
+  return out;
+}
+const insightHTML = i => `<div class="insight ${i.cls}"><span class="em">${i.em}</span><p>${i.html}</p></div>`;
+
+/* =================================================================
+   CHARTS (hand-rolled SVG, palette validated for CVD)
+================================================================= */
+/* stable hue per category — color follows the entity, not its rank */
+const CAT_COLOR_PREF = {food:0, azayem:1, uni:2, trans:3, subs:4, shop:5, family:2, sadaqa:3, health:5, debt:4, goal:0, other:5, __rest:5};
+function donutSVG(entries, total){
+  /* top 5 + Other, visible gaps, direct labels in legend */
+  let items = entries.slice(0,5);
+  const rest = entries.slice(5).reduce((a,[,v])=>a+v,0);
+  if(rest>0) items.push(['__rest', rest]);
+  /* assign each slice its category's stable color; bump to next free hue on collision */
+  const used=new Set();
+  const colors = items.map(([cat])=>{
+    let ci = CAT_COLOR_PREF[cat] ?? 5;
+    while(used.has(ci)) ci=(ci+1)%6;
+    used.add(ci);
+    return CHART_COLORS[ci];
+  });
+  const R=54, CX=70, CY=70, W=22;
+  const C=2*Math.PI*R;
+  let off=0, segs='';
+  items.forEach(([cat,val],i)=>{
+    const frac = val/total;
+    const len = Math.max(frac*C - 4, 1.5); /* ~4px gap between segments */
+    segs += `<circle r="${R}" cx="${CX}" cy="${CY}" fill="none" stroke="${colors[i]}" stroke-width="${W}"
+      stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-(off*C+2)}" transform="rotate(-90 ${CX} ${CY})"/>`;
+    off += frac;
+  });
+  const legend = items.map(([cat,val],i)=>`
+    <div class="li"><span class="sw" style="background:${colors[i]}"></span>
+      <span class="nm">${cat==='__rest'?'غير هيك':catOf(cat).em+' '+catOf(cat).nm}</span>
+      <span class="vv num">${fmt(val)}</span><span class="pc num">${Math.round(val/total*100)}%</span></div>`).join('');
+  return `
+    <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:center">
+      <svg viewBox="0 0 140 140" width="150" height="150" role="img" aria-label="توزيع المصاريف">
+        ${segs}
+        <text x="70" y="66" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" style="font-variant-numeric:tabular-nums">${fmt(total)}</text>
+        <text x="70" y="84" text-anchor="middle" font-size="9.5" fill="var(--ink2)">${cur()} مصروف</text>
+      </svg>
+      <div class="legend" style="flex:1;min-width:180px">${legend}</div>
+    </div>`;
+}
+function trendChart(months){
+  const data = months.map(y=>({y, inc:monthIncome(y), sp:monthSpend(y)}));
+  const max = Math.max(...data.map(d=>Math.max(d.inc,d.sp)), 1);
+  const H=120, BW=9, GAP=2, GROUP=44, PADT=8;
+  const w = months.length*GROUP;
+  let bars='', labels='';
+  data.forEach((d,i)=>{
+    const x = w - (i+1)*GROUP + (GROUP-2*BW-GAP)/2; /* RTL: newest on the left */
+    const hInc = Math.round(d.inc/max*(H-PADT)), hSp = Math.round(d.sp/max*(H-PADT));
+    bars += `<rect x="${x}" y="${H-hInc}" width="${BW}" height="${Math.max(hInc,1)}" rx="3" fill="var(--c1)"/>`;
+    bars += `<rect x="${x+BW+GAP}" y="${H-hSp}" width="${BW}" height="${Math.max(hSp,1)}" rx="3" fill="var(--c2)"/>`;
+    labels += `<text x="${x+BW+GAP/2}" y="${H+14}" text-anchor="middle" font-size="8.5" fill="var(--ink2)">${ymLabel(d.y)}</text>`;
+  });
+  const table = `
+    <table class="mini"><thead><tr><th>الشهر</th><th>دخل</th><th>مصروف</th><th>الصافي</th></tr></thead><tbody>
+    ${[...data].reverse().map(d=>{
+      const net=d.inc-d.sp;
+      return `<tr><td>${ymLabel(d.y)}</td><td class="n">${fmt(d.inc)}</td><td class="n">${fmt(d.sp)}</td>
+        <td class="n" style="color:${net>=0?'var(--good)':'var(--bad)'};font-weight:700">${net>=0?'+':''}${fmt(net)}</td></tr>`;
+    }).join('')}
+    </tbody></table>`;
+  return `
+    <div style="display:flex;gap:14px;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px">
+      <span style="display:flex;align-items:center;gap:6px"><span class="sw" style="width:10px;height:10px;border-radius:3px;background:var(--c1);display:inline-block"></span>دخل</span>
+      <span style="display:flex;align-items:center;gap:6px"><span class="sw" style="width:10px;height:10px;border-radius:3px;background:var(--c2);display:inline-block"></span>مصروف</span>
+    </div>
+    <div class="chart-wrap"><svg viewBox="0 0 ${w} ${H+20}" width="100%" style="max-height:170px" role="img" aria-label="الدخل مقابل المصروف شهرياً">
+      <line x1="0" y1="${H}" x2="${w}" y2="${H}" stroke="var(--line)" stroke-width="1"/>
+      ${bars}${labels}
+    </svg></div>${table}`;
+}
+
+/* =================================================================
+   RENDERERS
+================================================================= */
+function txRow(t){
+  const c=catOf(t.cat);
+  const sub = [t.who?`مع ${t.who}`:'', t.note, dayLabel(t.date)].filter(Boolean).join(' · ');
+  return `<button class="row" data-edittx="${t.id}">
+    <span class="dot">${c.em}</span>
+    <span class="grow"><span class="t1">${c.nm}</span><span class="t2">${esc(sub)}</span></span>
+    <span class="amt ${t.type==='inc'?'pos':'neg'} num">${t.type==='inc'?'+':'−'}${fmt(t.amount)}</span>
+  </button>`;
+}
+document.addEventListener('click', e=>{
+  const b=e.target.closest('[data-edittx]');
+  if(b){ const t=db.tx.find(x=>x.id===b.dataset.edittx); if(t) openTxSheet(t); }
+});
+
+function renderHome(){
+  const y=thisYM();
+  const inc=monthIncome(y), sp=monthSpend(y), net=inc-sp;
+  $('#hIncome').textContent=fmt(inc); $('#hSpend').textContent=fmt(sp);
+  const n=$('#hNet'); n.textContent=(net>=0?'+':'')+fmt(net);
+  n.className='val num '+(net>=0?'pos':'neg');
+  const now=new Date(); $('#hdrMonth').textContent = MONTHS_AR[now.getMonth()]+' '+now.getFullYear();
+
+  /* alerts: only most urgent (trials) on home */
+  const ins = buildInsights();
+  $('#hAlerts').innerHTML = ins.filter(i=>i.cls==='bad').map(insightHTML).join('');
+  $('#hInsights').innerHTML = ins.filter(i=>i.cls!=='bad').slice(0,2).map(insightHTML).join('');
+
+  /* budgets */
+  const buds = Object.entries(db.settings.budgets||{}).filter(([,v])=>v>0);
+  $('#hBudgets').innerHTML = buds.length ? `<h2 class="sec">ميزانيات الشهر</h2><div class="card">`+
+    buds.map(([cat,limit])=>{
+      const spent = sumBy(txIn(y), t=>t.type==='exp'&&t.cat===cat);
+      const pct = Math.min(spent/limit*100,100);
+      const cls = spent>limit?'over':(pct>80?'warn':'');
+      return `<div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:13px">
+          <b>${catOf(cat).em} ${catOf(cat).nm}</b>
+          <span class="muted"><span class="num">${fmt(spent)}</span> / <span class="num">${fmt(limit)}</span></span>
+        </div>
+        <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('')+`</div>` : '';
+
+  /* recent */
+  const recent=[...db.tx].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).slice(0,6);
+  $('#hRecent').innerHTML = recent.length ? recent.map(txRow).join('') :
+    `<div class="empty"><span class="big">🌱</span>ابدئي بأول عملية — اكبسي زر <b>+</b> تحت</div>`;
+}
+
+let histMonth='', histCat='';
+function renderHistory(){
+  const months=[...new Set(db.tx.map(t=>ym(t.date)))].sort().reverse();
+  if(!histMonth || !months.includes(histMonth)) histMonth=months[0]||thisYM();
+  $('#histMonths').innerHTML = months.map(m=>`<button class="chip ${m===histMonth?'on':''}" data-hm="${m}">${ymLabel(m)}</button>`).join('')||'';
+  const usedCats=[...new Set(txIn(histMonth).map(t=>t.cat))];
+  $('#histCats').innerHTML = `<button class="chip ${!histCat?'on':''}" data-hc="">الكل</button>`+
+    usedCats.map(c=>`<button class="chip ${c===histCat?'on':''}" data-hc="${c}">${catOf(c).em} ${catOf(c).nm}</button>`).join('');
+  const list = txIn(histMonth).filter(t=>!histCat||t.cat===histCat).sort((a,b)=>b.date.localeCompare(a.date));
+  $('#histList').innerHTML = list.length ? list.map(txRow).join('') : `<div class="empty"><span class="big">🗂️</span>ما في عمليات بهالفلتر</div>`;
+}
+document.addEventListener('click', e=>{
+  const m=e.target.closest('[data-hm]'); if(m){ histMonth=m.dataset.hm; histCat=''; renderHistory(); }
+  const c=e.target.closest('[data-hc]'); if(c){ histCat=c.dataset.hc; renderHistory(); }
+  const am=e.target.closest('[data-am]'); if(am){ anMonth=am.dataset.am; renderAnalytics(); }
+});
+
+let anMonth='';
+function renderAnalytics(){
+  const months=[...new Set(db.tx.map(t=>ym(t.date)))].sort().reverse();
+  if(!anMonth || !months.includes(anMonth)) anMonth=months[0]||thisYM();
+  $('#anMonths').innerHTML = months.map(m=>`<button class="chip ${m===anMonth?'on':''}" data-am="${m}">${ymLabel(m)}</button>`).join('');
+  const entries=spendByCat(anMonth); const total=entries.reduce((a,[,v])=>a+v,0);
+  $('#anDonutCard').innerHTML = total>0 ? donutSVG(entries,total) :
+    `<div class="empty"><span class="big">📊</span>سجلي مصاريف الشهر وبفرجيكي وين بتروح</div>`;
+  $('#anTrendCard').innerHTML = trendChart(lastMonths(6));
+  const ins=buildInsights();
+  $('#anInsights').innerHTML = ins.length ? ins.map(insightHTML).join('') :
+    `<div class="card flat muted">سجلي شوية عمليات وبطلعلك قراءات عن سلوكك 🔍</div>`;
+}
+
+function renderIdeas(){
+  const st={new:['جديدة','s1'],studying:['قيد الدراسة','s2'],later:['مؤجلة','s3'],started:['بلشت فيها','s1']};
+  $('#ideasList').innerHTML = db.ideas.length ? db.ideas.map(i=>{
+    const [nm,cls]=st[i.status]||st.new;
+    const ai = i.ai ? `<div class="ai-box">
+        <div><span class="stars">${'★'.repeat(i.ai.priority||0)}${'☆'.repeat(5-(i.ai.priority||0))}</span> <b>أولوية ${i.ai.priority}/5</b></div>
+        <p style="margin-top:6px"><b>${esc(i.ai.verdict||'')}</b></p>
+        <p class="muted" style="margin-top:4px">${esc(i.ai.feasibility||'')}</p>
+        ${i.ai.first_steps?`<ol>${i.ai.first_steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>`:''}
+      </div>` : '';
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <b style="font-size:15px">${esc(i.title)}</b>
+        <button class="idea-status ${cls}" data-cycle="${i.id}">${nm}</button>
+      </div>
+      <p class="muted" style="margin-top:6px;white-space:pre-wrap">${esc(i.body)}</p>
+      <p class="tiny" style="margin-top:6px">${dayLabel(i.date)}</p>
+      ${ai}
+      <div style="display:flex;gap:8px;margin-top:12px">
+        ${i.ai?'':`<button class="btn primary sm" data-analyze="${i.id}">حلليها 🤖</button>`}
+        <button class="btn ghost sm" data-delidea="${i.id}">حذف</button>
+      </div>
+    </div>`;
+  }).join('') : `<div class="card"><div class="empty"><span class="big">💡</span>أفكارك بتنحفظ هون — سجلي أول وحدة!</div></div>`;
+}
+document.addEventListener('click', e=>{
+  const a=e.target.closest('[data-analyze]'); if(a){ analyzeIdea(a.dataset.analyze); }
+  const d=e.target.closest('[data-delidea]'); if(d){
+    if(confirm('أكيد بدك تحذفي الفكرة؟')){ db.ideas=db.ideas.filter(i=>i.id!==d.dataset.delidea); save(); renderIdeas(); }
+  }
+  const c=e.target.closest('[data-cycle]'); if(c){
+    const order=['new','studying','started','later'];
+    const idea=db.ideas.find(i=>i.id===c.dataset.cycle);
+    idea.status=order[(order.indexOf(idea.status)+1)%order.length];
+    save(); renderIdeas();
+  }
+});
+
+function renderSubs(){
+  const total=db.subs.reduce((a,s)=>a+subMonthly(s),0);
+  $('#subsTotal').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline">
+    <span class="muted">كلفة اشتراكاتك بالشهر</span><b style="font-size:20px" class="num">${fmt(total)} ${cur()}</b></div>`;
+  const warns=db.subs.filter(s=>s.trial&&daysUntil(s.next)<=7);
+  $('#subsWarn').innerHTML=warns.map(s=>`<div class="danger-strip">🚨 تجربة ${esc(s.name)} بتخلص ${daysUntil(s.next)<=0?'اليوم':'بعد '+daysUntil(s.next)+' أيام'} — ألغيها قبل ما ينسحب ${money(s.amount)}!</div>`).join('');
+  $('#subsList').innerHTML = db.subs.length ? [...db.subs].sort((a,b)=>a.next.localeCompare(b.next)).map(s=>{
+    const d=daysUntil(s.next);
+    return `<button class="row" data-editsub="${s.id}">
+      <span class="dot">${s.trial?'⏳':'🔁'}</span>
+      <span class="grow"><span class="t1">${esc(s.name)} ${s.trial?'<span style="color:var(--warn);font-size:11px">تجربة</span>':''}</span>
+      <span class="t2">${s.cycle==='y'?'سنوي':'شهري'} · ${d<0?'فات التجديد':d===0?'بتجدد اليوم':'بعد '+d+' يوم'}</span></span>
+      <span class="amt num">${fmt(s.amount)}</span></button>`;
+  }).join('') : `<div class="empty"><span class="big">🔁</span>سجلي اشتراكاتك كلها — خاصة التجارب المجانية اللي بتنسيها 😉</div>`;
+}
+document.addEventListener('click', e=>{
+  const b=e.target.closest('[data-editsub]'); if(b){ openSubSheet(db.subs.find(s=>s.id===b.dataset.editsub)); }
+  const d=e.target.closest('[data-editdebt]'); if(d){ openDebtSheet(db.debts.find(x=>x.id===d.dataset.editdebt)); }
+  const p=e.target.closest('[data-paydebt]'); if(p){
+    e.stopPropagation();
+    const debt=db.debts.find(x=>x.id===p.dataset.paydebt);
+    const v=num(prompt(`قديش ${debt.dir==='onMe'?'سددتي':'رجعولك'}؟ (ضايل ${fmt(debt.total-debt.paid)})`));
+    if(v>0){
+      debt.paid=Math.min(debt.paid+v,debt.total);
+      if(debt.dir==='onMe') db.tx.push({id:uid(),type:'exp',cat:'debt',amount:v,note:'سداد لـ'+debt.who,who:'',date:todayISO()});
+      else db.tx.push({id:uid(),type:'inc',cat:'debtback',amount:v,note:'من '+debt.who,who:'',date:todayISO()});
+      save(); render('debts'); toast(debt.paid>=debt.total?'سكّرتي الدين 🎉':'انسجلت الدفعة ✅');
+    }
+  }
+  const g=e.target.closest('[data-fundgoal]'); if(g){
+    e.stopPropagation();
+    const goal=db.goals.find(x=>x.id===g.dataset.fundgoal);
+    const v=num(prompt(`قديش بدك تحطي بـ"${goal.name}"؟`));
+    if(v>0){
+      goal.saved+=v;
+      db.tx.push({id:uid(),type:'exp',cat:'goal',amount:v,note:'توفير: '+goal.name,who:'',date:todayISO()});
+      save(); render('goals'); toast(goal.saved>=goal.target?'وصلتي الهدف! 🎉🎉':'زبطت ✅');
+    }
+  }
+  const ge=e.target.closest('[data-editgoal]'); if(ge){ openGoalSheet(db.goals.find(x=>x.id===ge.dataset.editgoal)); }
+});
+
+function renderDebts(){
+  const onMe=db.debts.filter(d=>d.dir==='onMe'&&d.total>d.paid);
+  const toMe=db.debts.filter(d=>d.dir==='toMe'&&d.total>d.paid);
+  const closed=db.debts.filter(d=>d.total<=d.paid);
+  const row=d=>{
+    const left=d.total-d.paid;
+    return `<div class="row" style="cursor:default">
+      <span class="dot">${d.dir==='onMe'?'📤':'📥'}</span>
+      <span class="grow"><span class="t1">${esc(d.who)}</span>
+      <span class="t2">${left>0?`ضايل <span class="num">${fmt(left)}</span> من <span class="num">${fmt(d.total)}</span>`:'مسكّر 🎉'}${d.note?' · '+esc(d.note):''}</span></span>
+      ${left>0?`<button class="btn ghost sm" data-paydebt="${d.id}">دفعة</button>`:''}
+      <button class="btn ghost sm" data-editdebt="${d.id}">✎</button>
+    </div>`;
+  };
+  let html='';
+  if(onMe.length) html+=`<div class="card flat"><b style="color:var(--bad);font-size:13px">عليّ (${fmt(onMe.reduce((a,d)=>a+d.total-d.paid,0))} ${cur()})</b></div><div class="list" style="margin-bottom:12px">${onMe.map(row).join('')}</div>`;
+  if(toMe.length) html+=`<div class="card flat"><b style="color:var(--good);font-size:13px">إلي (${fmt(toMe.reduce((a,d)=>a+d.total-d.paid,0))} ${cur()})</b></div><div class="list" style="margin-bottom:12px">${toMe.map(row).join('')}</div>`;
+  if(closed.length) html+=`<div class="card flat"><b class="muted" style="font-size:13px">مسكّرة ✅</b></div><div class="list">${closed.map(row).join('')}</div>`;
+  $('#debtsList').innerHTML = html||`<div class="card"><div class="empty"><span class="big">🤝</span>ولا دين — الله يديمها 🙏</div></div>`;
+  $('#debtsList').className='';
+}
+function renderGoals(){
+  $('#goalsList').innerHTML = db.goals.length ? db.goals.map(g=>{
+    const pct=Math.min(g.saved/g.target,1);
+    const stitches=20, done=Math.round(pct*stitches);
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <b>🎯 ${esc(g.name)}</b>
+        <span class="muted"><span class="num">${fmt(g.saved)}</span> / <span class="num">${fmt(g.target)}</span> (${Math.round(pct*100)}%)</span>
+      </div>
+      <div class="stitch-track" aria-hidden="true">${Array.from({length:stitches},(_,i)=>`<i class="${i<done?'done':''}"></i>`).join('')}</div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn primary sm" data-fundgoal="${g.id}">+ حطي فيه</button>
+        <button class="btn ghost sm" data-editgoal="${g.id}">تعديل</button>
+      </div>
+    </div>`;
+  }).join('') : `<div class="card"><div class="empty"><span class="big">🎯</span>حطي هدف — سفرة، جهاز، صدقة شهرية... وخيطيه غرزة غرزة</div></div>`;
+}
+function wishRow(w){
+  return `<div class="row" style="cursor:default">
+    <span class="dot" data-editwish="${w.id}">${w.image?`<img src="${w.image}" alt="">`:'🛍️'}</span>
+    <span class="grow" data-editwish="${w.id}"><span class="t1">${esc(w.name)}</span>
+    <span class="t2">${w.bought?'اشتريتها ✅':(w.note||'')}</span></span>
+    <span class="amt num">${fmt(w.price)}</span>
+    ${w.bought?'':`<button class="btn primary sm" data-buywish="${w.id}">اشتريتها</button>`}
+  </div>`;
+}
+function renderWishlist(){
+  const pending=db.wishlist.filter(w=>!w.bought).sort((a,b)=>b.date.localeCompare(a.date));
+  const bought=db.wishlist.filter(w=>w.bought).sort((a,b)=>(b.boughtDate||'').localeCompare(a.boughtDate||''));
+  let html='';
+  if(pending.length){
+    const total=pending.reduce((a,w)=>a+w.price,0);
+    html += `<div class="card flat"><b style="font-size:13px">بدي أشتريها (${fmt(total)} ${cur()} تقريباً)</b></div><div class="list" style="margin-bottom:12px">${pending.map(wishRow).join('')}</div>`;
+  }
+  if(bought.length){
+    html += `<div class="card flat"><b class="muted" style="font-size:13px">اشتريتها ✅</b></div><div class="list">${bought.map(wishRow).join('')}</div>`;
+  }
+  $('#wishlistList').innerHTML = html || `<div class="card"><div class="empty"><span class="big">🛒</span>حطي هون كل شي حابة تشتريه — وضيفيله صورة إذا بدك</div></div>`;
+}
+document.addEventListener('click', e=>{
+  const ew=e.target.closest('[data-editwish]'); if(ew){ openWishSheet(db.wishlist.find(w=>w.id===ew.dataset.editwish)); }
+  const bw=e.target.closest('[data-buywish]'); if(bw){
+    e.stopPropagation();
+    const item=db.wishlist.find(w=>w.id===bw.dataset.buywish);
+    if(item) openTxSheetForWish(item);
+  }
+});
+function renderMore(){
+  const subsTotal=db.subs.reduce((a,s)=>a+subMonthly(s),0);
+  $('#mSubsSummary').textContent = db.subs.length?`${db.subs.length} اشتراكات · ${fmt(subsTotal)} ${cur()}/شهر`:'ولا اشتراك مسجل';
+  const owe=db.debts.filter(d=>d.dir==='onMe').reduce((a,d)=>a+Math.max(d.total-d.paid,0),0);
+  $('#mDebtsSummary').textContent = owe>0?`عليكي ${fmt(owe)} ${cur()}`:'ولا دين مفتوح 🎉';
+  $('#mGoalsSummary').textContent = db.goals.length?`${db.goals.length} أهداف شغالة`:'ولا هدف بعد';
+  const pendingWish=db.wishlist.filter(w=>!w.bought);
+  $('#mWishSummary').textContent = pendingWish.length?`${pendingWish.length} أشياء · ${fmt(pendingWish.reduce((a,w)=>a+w.price,0))} ${cur()}`:'ولا شي مسجل بعد';
+}
+function renderSettings(){
+  $('#setCurrency').value=db.settings.currency||'₪';
+  $('#setTheme').value=db.settings.theme||'';
+  $('#setApiKey').value=db.settings.apiKey||'';
+  $('#budgetInputs').innerHTML = CATS.exp.filter(c=>!['goal','debt'].includes(c.id)).map(c=>`
+    <div class="field" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="width:110px;flex:none;font-size:13px;font-weight:600">${c.em} ${c.nm}</span>
+      <input type="text" inputmode="decimal" dir="ltr" data-budget="${c.id}" value="${db.settings.budgets?.[c.id]||''}" placeholder="بدون سقف" style="padding:8px 12px">
+    </div>`).join('');
+}
+$('#setCurrency').addEventListener('change', e=>{ db.settings.currency=e.target.value; save(); toast('تغيرت العملة'); });
+$('#setTheme').addEventListener('change', e=>{ db.settings.theme=e.target.value; save(); applyTheme(); });
+$('#setApiKey').addEventListener('change', e=>{ db.settings.apiKey=e.target.value.trim(); save(); toast('انحفظ المفتاح 🔐'); });
+document.addEventListener('change', e=>{
+  if(e.target.dataset.budget){
+    db.settings.budgets=db.settings.budgets||{};
+    const v=num(e.target.value);
+    if(v>0) db.settings.budgets[e.target.dataset.budget]=v; else delete db.settings.budgets[e.target.dataset.budget];
+    save();
+  }
+});
+function applyTheme(){
+  const t=db.settings.theme;
+  if(t) document.documentElement.dataset.theme=t; else delete document.documentElement.dataset.theme;
+}
+
+/* export / import */
+$('#btnExport').addEventListener('click', ()=>{
+  const blob=new Blob([JSON.stringify(db,null,1)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='masari-backup-'+todayISO()+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('نزلت النسخة ⬇');
+});
+$('#btnImport').addEventListener('click', ()=>$('#importFile').click());
+$('#importFile').addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!d.tx||!d.settings) throw 0;
+      if(confirm('رح تنستبدل كل البيانات الحالية بالنسخة — أكيدة؟')){
+        db=d; db.wishlist=db.wishlist||[]; save(); applyTheme(); render(currentPage); toast('رجعت بياناتك ✅');
+      }
+    }catch(err){ toast('الملف مش نسخة مصاري صالحة'); }
+    e.target.value='';
+  };
+  r.readAsText(f);
+});
+
+/* =================================================================
+   BOOT
+================================================================= */
+const RENDER = {home:renderHome, history:renderHistory, analytics:renderAnalytics,
+  ideas:renderIdeas, more:renderMore, subs:renderSubs, debts:renderDebts, goals:renderGoals, wishlist:renderWishlist, settings:renderSettings};
+function render(page){ (RENDER[page]||(()=>{}))(); if(page==='more') renderMore(); }
+
+boot();
+</script>
+</body>
+</html>
