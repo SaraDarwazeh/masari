@@ -116,6 +116,15 @@ h2.sec:first-child{margin-top:4px}
 .muted{color:var(--ink2);font-size:13px}
 .tiny{color:var(--ink3);font-size:12px}
 
+/* total balance hero card */
+.balance-card{background:var(--pine);color:#FAF7F1;border-radius:var(--r);padding:18px 20px;margin-bottom:12px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+:root[data-theme="dark"] .balance-card{color:#EAF4EF}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .balance-card{color:#EAF4EF} }
+.balance-card .lbl{font-size:13px;font-weight:600;opacity:.85}
+.balance-card .val{font-size:32px;font-weight:700;margin-top:3px;line-height:1.1}
+.balance-card .sub{font-size:12px;opacity:.8;margin-top:4px;min-height:16px}
+.balance-card .val.neg{color:#FFD9DF}
+
 /* stat tiles */
 .tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
 .tile{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 14px}
@@ -303,6 +312,11 @@ table.mini td.n{font-variant-numeric:tabular-nums}
 <main>
   <!-- ================= HOME ================= -->
   <section class="page active" id="page-home">
+    <div class="balance-card">
+      <div class="lbl">المتبقي معك بالمجمل</div>
+      <div class="val num" id="hBalance">0</div>
+      <div class="sub" id="hBalanceSub"></div>
+    </div>
     <div class="tiles">
       <div class="tile"><div class="lbl">دخل الشهر</div><div class="val pos num" id="hIncome">0</div></div>
       <div class="tile"><div class="lbl">مصروف الشهر</div><div class="val neg num" id="hSpend">0</div></div>
@@ -1471,6 +1485,17 @@ function renderHome(){
   const n=$('#hNet'); n.textContent=(net>=0?'+':'')+fmt(net);
   n.className='val num '+(net>=0?'pos':'neg');
   const now=new Date(); $('#hdrMonth').textContent = MONTHS_AR[now.getMonth()]+' '+now.getFullYear();
+
+  /* total balance across all time (income − expenses) */
+  const totalInc = sumBy(db.tx, t=>t.type==='inc');
+  const totalSp  = sumBy(db.tx, t=>t.type==='exp');
+  const balance  = totalInc - totalSp;
+  const bEl=$('#hBalance');
+  bEl.textContent = (balance<0?'−':'') + fmt(Math.abs(balance)) + ' ' + cur();
+  bEl.className = 'val num' + (balance<0?' neg':'');
+  $('#hBalanceSub').textContent = db.tx.length
+    ? `دخل ${fmt(totalInc)} · مصروف ${fmt(totalSp)}`
+    : 'ابدئي بتسجيل عملياتك ويطلعلك رصيدك';
 
   /* alerts: only most urgent (trials) on home */
   const ins = buildInsights();
