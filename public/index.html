@@ -419,18 +419,29 @@ table.mini td.n{font-variant-numeric:tabular-nums}
       </div>
       <p class="tiny">المفتاح بيتخزن بقاعدة بياناتك على سيرفرك، وما بنبعث إشي لأي حدا غير Anthropic لما تطلبي تحليل.</p>
     </div>
-    <h2 class="sec">الأمان</h2>
+    <h2 class="sec">حسابك</h2>
     <div class="card">
+      <div class="security-row">
+        <div><b style="font-size:14px" id="setUserName">-</b>
+          <p class="tiny" style="margin-top:2px" id="setUserRole"></p>
+        </div>
+        <button class="btn ghost sm" id="btnLogout">خروج</button>
+      </div>
       <div class="security-row">
         <span style="font-size:14px;font-weight:600">رمز الدخول</span>
         <button class="btn ghost sm" id="btnChangePin">تغيير</button>
       </div>
-      <div class="security-row">
-        <span style="font-size:14px;font-weight:600">تسجيل الخروج</span>
-        <button class="btn ghost sm" id="btnLogout">خروج</button>
+    </div>
+    <p class="tiny" style="margin:-4px 0 14px">بياناتك محفوظة على سيرفرك الخاص. صدّري نسخة احتياطية كل فترة لأي طارئ.</p>
+
+    <div id="ownerUsersWrap" style="display:none">
+      <h2 class="sec">المستخدمين</h2>
+      <div class="card">
+        <p class="tiny" style="margin-bottom:10px">إنتي المالكة (owner) لهاد التطبيق — تقدري تنشئي حسابات جديدة لأصحابك. كل حساب بياناته منفصلة تماماً، ومحدا بيقدر يشوف بيانات التاني.</p>
+        <div id="usersList" style="margin-bottom:12px"></div>
+        <button class="btn primary sm" id="btnAddUser">+ إضافة مستخدم</button>
       </div>
     </div>
-    <p class="tiny" style="margin:-4px 0 14px">بياناتك محفوظة على سيرفرك الخاص، ومحمية برمز الدخول. صدّري نسخة احتياطية كل فترة لأي طارئ.</p>
     <h2 class="sec">اختصارات الإضافة السريعة</h2>
     <div class="card">
       <p class="tiny" style="margin-bottom:10px">iOS ما بيدعم ويدجيتات على الشاشة الرئيسية للتطبيقات على الويب، بس بتقدري تضيفي روابط مباشرة على الشاشة بواسطة تطبيق <b>Shortcuts</b> — بتفتح مصاري وبتوديكي مباشرة على شاشة الإضافة.</p>
@@ -526,6 +537,22 @@ table.mini td.n{font-variant-numeric:tabular-nums}
   <button class="btn danger block" id="debtDelete" style="margin-top:8px;display:none">حذف الدين</button>
 </div>
 
+<div class="sheet" id="sheet-newuser">
+  <div class="grab"></div>
+  <h3>مستخدم جديد 👥</h3>
+  <p class="tiny" style="margin-bottom:14px">إنشاء حساب لصاحبتك — عليها تدخل اسم المستخدم ورمز الدخول اللي بتحطيه.</p>
+  <div class="field"><label>اسم المستخدم</label>
+    <input type="text" id="newUserName" placeholder="مثلاً: salma" dir="ltr"
+           autocapitalize="none" autocorrect="off" spellcheck="false">
+    <p class="tiny" style="margin-top:4px">أحرف صغيرة/أرقام بس، بدون فراغات</p>
+  </div>
+  <div class="field"><label>رمز الدخول (٦ أرقام)</label>
+    <input type="tel" inputmode="numeric" maxlength="6" pattern="[0-9]{6}"
+           id="newUserPin" placeholder="123456" dir="ltr" autocomplete="new-password">
+  </div>
+  <button class="btn primary block" id="newUserSave">إنشاء الحساب</button>
+</div>
+
 <div class="sheet" id="sheet-payment">
   <div class="grab"></div>
   <h3 id="payTitle">دفعة جديدة</h3>
@@ -576,8 +603,13 @@ table.mini td.n{font-variant-numeric:tabular-nums}
 
 <div class="lock-screen" id="lockScreen" style="display:none" role="dialog" aria-modal="true" aria-label="قفل التطبيق">
   <div class="lock-icon">🔒</div>
-  <h2 id="lockTitle">أدخلي الرمز السري</h2>
+  <h2 id="lockTitle">أدخلي رمز الدخول</h2>
   <p class="muted" id="lockSub">&nbsp;</p>
+  <div class="lock-user" id="lockUserWrap" style="width:220px;max-width:80%;margin-bottom:14px;display:none">
+    <input type="text" id="lockUsername" placeholder="اسم المستخدم" autocomplete="username"
+           autocapitalize="none" autocorrect="off" spellcheck="false"
+           dir="ltr" style="text-align:center;font-weight:600">
+  </div>
   <div class="pin-dots" id="pinDots"></div>
   <p class="lock-error" id="lockError">&nbsp;</p>
   <div class="keypad" id="keypad">
@@ -707,7 +739,9 @@ function showLock(mode, title, sub, showCancel){
   $('#lockTitle').textContent = title;
   $('#lockSub').textContent = sub || ' ';
   $('#lockCancel').style.visibility = showCancel ? 'visible' : 'hidden';
+  $('#lockUserWrap').style.display = arguments[4] ? '' : 'none';
   $('#lockScreen').style.display='flex';
+  if(arguments[4] && !$('#lockUsername').value){ setTimeout(()=>$('#lockUsername').focus(), 60); }
 }
 function hideLock(){ $('#lockScreen').style.display='none'; }
 function onLockCancel(){
@@ -725,8 +759,9 @@ function handleShortcutHash(){
   }
 }
 async function afterAuth(){
+  if(!currentUser) await refreshCurrentUser();
   const r = await api('/state');
-  if(r.ok){ const data = await r.json(); if(data) db = data; }
+  if(r.ok){ const data = await r.json(); if(data) db = data; else db = emptyDB(); }
   migrate();
   hideLock(); applyTheme(); render('home');
   handleShortcutHash();
@@ -735,26 +770,41 @@ window.addEventListener('hashchange', ()=>{ if($('#lockScreen').style.display!==
 async function submitPin(){
   if(Date.now()<cooldownUntil){ lockError('استنى شوي وجربي مرة تانية'); pinBuf=''; renderPinDots(); return; }
   const pin = pinBuf;
+  const readUsername = () => $('#lockUsername').value.trim().toLowerCase();
   if(lockMode==='setup'){
+    const username = readUsername();
+    if(!/^[a-z0-9](?:[a-z0-9_-]{0,18}[a-z0-9])?$/.test(username)){
+      lockError('اسم مستخدم غلط — أحرف/أرقام إنجليزية بدون فراغات');
+      pinBuf=''; renderPinDots(); return;
+    }
     pinFirstEntry = pin;
-    showLock('setup-confirm','أكدي رمز الدخول','اكتبيه مرة ثانية عشان نتأكد', false);
+    showLock('setup-confirm','أكدي رمز الدخول','اكتبيه مرة ثانية عشان نتأكد', false, false);
     return;
   }
   if(lockMode==='setup-confirm'){
-    if(pin!==pinFirstEntry){ lockError('الرمزين مش متطابقين — من جديد'); showLock('setup','رحّبي فيكي! اختاري رمز دخول من ٦ أرقام','رح تحتاجيه كل مرة تفتحي فيها مصاري', false); return; }
-    const r = await api('/setup', {method:'POST', body:JSON.stringify({password:pin})});
-    if(r.ok){ await afterAuth(); }
-    else { lockError('صار خلل، جربي كمان مرة'); showLock('setup','رحّبي فيكي! اختاري رمز دخول من ٦ أرقام','رح تحتاجيه كل مرة تفتحي فيها مصاري', false); }
+    if(pin!==pinFirstEntry){
+      lockError('الرمزين مش متطابقين — من جديد');
+      showLock('setup','رحّبي فيكي! اختاري اسم مستخدم ورمز دخول ٦ أرقام','رح تحتاجيهم كل مرة تفتحي مصاري', false, true);
+      return;
+    }
+    const username = readUsername();
+    const r = await api('/setup', {method:'POST', body:JSON.stringify({username, password:pin})});
+    if(r.ok){ await afterAuth(); return; }
+    const err = await r.json().catch(()=>({}));
+    lockError(err.error==='bad-username' ? 'اسم مستخدم غلط' : 'صار خلل، جربي كمان مرة');
+    showLock('setup','رحّبي فيكي! اختاري اسم مستخدم ورمز دخول ٦ أرقام','رح تحتاجيهم كل مرة تفتحي مصاري', false, true);
     return;
   }
   if(lockMode==='unlock'){
-    const r = await api('/login', {method:'POST', body:JSON.stringify({password:pin})});
+    const username = readUsername();
+    if(!username){ lockError('اكتبي اسم المستخدم أول'); pinBuf=''; renderPinDots(); return; }
+    const r = await api('/login', {method:'POST', body:JSON.stringify({username, password:pin})});
     if(r.ok){ await afterAuth(); }
     else if(r.status===429){
       const j = await r.json().catch(()=>({wait:30}));
       cooldownUntil = Date.now()+(j.wait||30)*1000;
       pinBuf=''; renderPinDots(); lockError('كتير محاولات غلط — استنى شوي');
-    } else { pinBuf=''; renderPinDots(); lockError('الرمز غلط، جربي كمان مرة'); }
+    } else { pinBuf=''; renderPinDots(); lockError('الاسم أو الرمز غلط'); }
     return;
   }
   if(lockMode==='change-verify'){
@@ -789,23 +839,33 @@ document.addEventListener('keydown', e=>{
   if(/^[0-9]$/.test(e.key) && pinBuf.length<PIN_LEN){ pinBuf+=e.key; renderPinDots(); if(pinBuf.length===PIN_LEN) submitPin(); }
   else if(e.key==='Backspace'){ pinBuf=pinBuf.slice(0,-1); renderPinDots(); }
 });
+let currentUser = null;
 $('#btnChangePin').addEventListener('click', ()=>{
-  showLock('change-verify','أدخلي رمز الدخول الحالي','', true);
+  showLock('change-verify','أدخلي رمز الدخول الحالي','', true, false);
 });
 $('#btnLogout').addEventListener('click', async ()=>{
   await api('/logout', {method:'POST'});
-  db = emptyDB();
-  showLock('unlock','أدخلي رمز الدخول','', false);
+  db = emptyDB(); currentUser = null;
+  $('#lockUsername').value='';
+  showLock('unlock','أدخلي اسم المستخدم ورمز الدخول','', false, true);
 });
+async function refreshCurrentUser(){
+  const status = await api('/status').then(r=>r.json()).catch(()=>null);
+  currentUser = status && status.user ? status.user : null;
+}
+async function afterAuthEnhanced(){
+  await refreshCurrentUser();
+  await afterAuth();
+}
 async function boot(){
   $('.stitches').innerHTML = Array.from({length:40},()=>'<i></i>').join('');
   try{
     const status = await api('/status').then(r=>r.json());
-    if(!status.hasPassword) showLock('setup','رحّبي فيكي! اختاري رمز دخول من ٦ أرقام','رح تحتاجيه كل مرة تفتحي فيها مصاري', false);
-    else if(!status.authenticated) showLock('unlock','أدخلي رمز الدخول','', false);
-    else await afterAuth();
+    if(!status.hasUsers) showLock('setup','رحّبي فيكي! اختاري اسم مستخدم ورمز دخول ٦ أرقام','رح تحتاجيهم كل مرة تفتحي مصاري', false, true);
+    else if(!status.authenticated) showLock('unlock','أدخلي اسم المستخدم ورمز الدخول','', false, true);
+    else { currentUser = status.user; await afterAuth(); }
   }catch(e){
-    showLock('unlock','ما قدرت أوصل للسيرفر','تأكدي إنه شغال وجربي تحدّثي الصفحة', false);
+    showLock('unlock','ما قدرت أوصل للسيرفر','تأكدي إنه شغال وجربي تحدّثي الصفحة', false, false);
   }
   if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 }
@@ -1679,12 +1739,60 @@ function renderSettings(){
   $('#setCurrency').value=db.settings.currency||'₪';
   $('#setTheme').value=db.settings.theme||'';
   $('#setApiKey').value=db.settings.apiKey||'';
+  $('#setUserName').textContent = currentUser ? currentUser.username : '-';
+  $('#setUserRole').textContent = currentUser
+    ? (currentUser.role==='owner' ? 'مالكة التطبيق 👑' : 'مستخدمة')
+    : '';
   $('#budgetInputs').innerHTML = CATS.exp.filter(c=>!['goal','debt'].includes(c.id)).map(c=>`
     <div class="field" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <span style="width:110px;flex:none;font-size:13px;font-weight:600">${c.em} ${c.nm}</span>
       <input type="text" inputmode="decimal" dir="ltr" data-budget="${c.id}" value="${db.settings.budgets?.[c.id]||''}" placeholder="بدون سقف" style="padding:8px 12px">
     </div>`).join('');
+  const isOwner = currentUser && currentUser.role === 'owner';
+  $('#ownerUsersWrap').style.display = isOwner ? '' : 'none';
+  if(isOwner) renderUsersList();
 }
+
+async function renderUsersList(){
+  const r = await api('/users');
+  if(!r.ok){ $('#usersList').innerHTML = `<p class="tiny">ما قدرت أجيب المستخدمين</p>`; return; }
+  const {users} = await r.json();
+  $('#usersList').innerHTML = users.map(u => {
+    const isMe = currentUser && u.id === currentUser.id;
+    const badge = u.role==='owner' ? '👑 مالكة' : '👤 مستخدمة';
+    return `<div class="security-row">
+      <div>
+        <b style="font-size:14px" dir="ltr">${esc(u.username)}</b>${isMe?' <span class="tiny">(إنتي)</span>':''}
+        <p class="tiny" style="margin-top:2px">${badge}</p>
+      </div>
+      ${(!isMe && u.role!=='owner')
+        ? `<button class="btn danger sm" data-deluser="${u.id}" data-delname="${esc(u.username)}">حذف</button>`
+        : ''}
+    </div>`;
+  }).join('');
+  $$('#usersList [data-deluser]').forEach(b => b.addEventListener('click', ()=>deleteUser(+b.dataset.deluser, b.dataset.delname)));
+}
+async function deleteUser(id, name){
+  if(!confirm(`أكيد بدك تحذفي "${name}"؟ رح تنمحي بياناتها كلها ومحدا يقدر يرجعها.`)) return;
+  const r = await api('/users/'+id, {method:'DELETE'});
+  if(r.ok){ toast('انحذفت 🗑️'); renderUsersList(); }
+  else toast('ما قدرت أحذف');
+}
+$('#btnAddUser').addEventListener('click', ()=>{
+  $('#newUserName').value=''; $('#newUserPin').value='';
+  openSheet('sheet-newuser');
+  setTimeout(()=>$('#newUserName').focus(), 200);
+});
+$('#newUserSave').addEventListener('click', async ()=>{
+  const username = $('#newUserName').value.trim().toLowerCase();
+  const password = $('#newUserPin').value.trim();
+  if(!/^[a-z0-9](?:[a-z0-9_-]{0,18}[a-z0-9])?$/.test(username)){ toast('اسم مستخدم غلط'); return; }
+  if(!/^\d{6}$/.test(password)){ toast('الرمز لازم يكون ٦ أرقام'); return; }
+  const r = await api('/users', {method:'POST', body:JSON.stringify({username, password})});
+  if(r.ok){ closeSheets(); toast('انعمل الحساب ✅'); renderUsersList(); return; }
+  const err = await r.json().catch(()=>({}));
+  toast(err.error==='username-taken' ? 'الاسم مستخدم' : 'ما زبطت');
+});
 $('#setCurrency').addEventListener('change', e=>{ db.settings.currency=e.target.value; save(); toast('تغيرت العملة'); });
 $('#setTheme').addEventListener('change', e=>{ db.settings.theme=e.target.value; save(); applyTheme(); });
 $('#setApiKey').addEventListener('change', e=>{ db.settings.apiKey=e.target.value.trim(); save(); toast('انحفظ المفتاح 🔐'); });
