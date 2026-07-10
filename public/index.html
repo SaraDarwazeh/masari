@@ -371,7 +371,14 @@ table.mini td.n{font-variant-numeric:tabular-nums}
   <section class="page" id="page-debts">
     <button class="back" data-go="more">→ رجوع</button>
     <div class="sec-row"><h2 class="sec">الديون</h2><button class="link" id="btnAddDebt">+ دين</button></div>
-    <div class="list" id="debtsList"></div>
+    <div id="debtsSummary"></div>
+    <div id="debtsList"></div>
+  </section>
+
+  <!-- ================= DEBT DETAIL ================= -->
+  <section class="page" id="page-debt-detail">
+    <button class="back" data-go="debts">→ رجوع للديون</button>
+    <div id="debtDetailBody"></div>
   </section>
 
   <!-- ================= GOALS ================= -->
@@ -490,10 +497,23 @@ table.mini td.n{font-variant-numeric:tabular-nums}
     <button data-v="toMe" class="inc">إلي 💪</button>
   </div>
   <div class="field"><label>لمين / من مين؟</label><input type="text" id="debtWho" placeholder="اسم الشخص أو الجهة"></div>
-  <div class="field"><label>المبلغ الكلي</label><input type="text" inputmode="decimal" id="debtAmount" placeholder="0.00" dir="ltr"></div>
+  <div style="display:flex;gap:10px">
+    <div class="field" style="flex:2"><label>المبلغ الكلي</label><input type="text" inputmode="decimal" id="debtAmount" placeholder="0.00" dir="ltr"></div>
+    <div class="field" style="flex:1"><label>العملة</label><select id="debtCurrency"></select></div>
+  </div>
   <div class="field"><label>ملاحظة</label><input type="text" id="debtNote" placeholder="اختياري"></div>
   <button class="btn primary block" id="debtSave">حفظ</button>
   <button class="btn danger block" id="debtDelete" style="margin-top:8px;display:none">حذف الدين</button>
+</div>
+
+<div class="sheet" id="sheet-payment">
+  <div class="grab"></div>
+  <h3 id="payTitle">دفعة جديدة</h3>
+  <div class="field"><input type="text" inputmode="decimal" class="amount-input" id="payAmount" placeholder="0.00" autocomplete="off"></div>
+  <div class="field"><label>التاريخ</label><input type="date" id="payDate"></div>
+  <div class="field"><label>ملاحظة (اختياري)</label><input type="text" id="payNote" placeholder="نقداً، تحويل بنكي..."></div>
+  <button class="btn primary block" id="paySave">حفظ الدفعة</button>
+  <button class="btn danger block" id="payDelete" style="margin-top:8px;display:none">حذف الدفعة</button>
 </div>
 
 <div class="sheet" id="sheet-goal">
@@ -587,6 +607,27 @@ const CHART_COLORS = ['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)
 
 /* ---------- store (server API) ---------- */
 const emptyDB = () => ({ settings:{currency:'₪',theme:'',apiKey:'',budgets:{}}, tx:[], subs:[], debts:[], goals:[], ideas:[], wishlist:[] });
+const CURRENCIES = [
+  {v:'₪',   nm:'شيكل ₪'},
+  {v:'$',   nm:'دولار $'},
+  {v:'د.أ', nm:'دينار د.أ'},
+  {v:'€',   nm:'يورو €'},
+];
+const debtPaid = d => (d.payments||[]).reduce((a,p)=>a+(+p.amount||0), 0);
+const debtLeft = d => Math.max((+d.total||0) - debtPaid(d), 0);
+const debtCcy  = d => d.currency || db.settings.currency || '₪';
+function migrate(){
+  db.wishlist = db.wishlist || [];
+  db.debts = (db.debts||[]).map(d => {
+    const currency = d.currency || db.settings.currency || '₪';
+    if (Array.isArray(d.payments)) return { ...d, currency };
+    const payments = (+d.paid > 0)
+      ? [{ amount: +d.paid, date: todayISO(), note: 'رصيد سابق' }]
+      : [];
+    const { paid, ...rest } = d;
+    return { ...rest, currency, payments };
+  });
+}
 let db = emptyDB();
 const api = (path, opts) => fetch('/api'+path, {credentials:'include', headers:{'content-type':'application/json'}, ...opts});
 let saveTimer=null, saveFailed=false;
@@ -651,7 +692,7 @@ function onLockCancel(){
 async function afterAuth(){
   const r = await api('/state');
   if(r.ok){ const data = await r.json(); if(data) db = data; }
-  db.wishlist = db.wishlist || [];
+  migrate();
   hideLock(); applyTheme(); render('home');
 }
 async function submitPin(){
@@ -757,7 +798,7 @@ let currentPage = 'home';
 function go(page){
   currentPage = page;
   $$('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+page));
-  const tab = TABS[page] ? page : (['subs','debts','goals','wishlist','settings'].includes(page)?'more':page);
+  const tab = TABS[page] ? page : (['subs','debts','debt-detail','goals','wishlist','settings'].includes(page)?'more':page);
   $$('nav .tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===tab));
   window.scrollTo(0,0);
   render(page);
@@ -872,6 +913,8 @@ function openDebtSheet(d){
   debtEditId=d?d.id:null; debtDir=d?d.dir:'onMe';
   $('#debtTitle').textContent=d?'تعديل الدين':'دين جديد';
   $$('#debtDirSeg button').forEach(x=>x.classList.toggle('on',x.dataset.v===debtDir));
+  $('#debtCurrency').innerHTML = CURRENCIES.map(c=>`<option value="${c.v}">${c.nm}</option>`).join('');
+  $('#debtCurrency').value = d ? debtCcy(d) : (db.settings.currency||'₪');
   $('#debtWho').value=d?d.who:''; $('#debtAmount').value=d?d.total:''; $('#debtNote').value=d?(d.note||''):'';
   $('#debtDelete').style.display=d?'':'none';
   openSheet('sheet-debt');
@@ -879,17 +922,68 @@ function openDebtSheet(d){
 $('#btnAddDebt').addEventListener('click', ()=>openDebtSheet(null));
 $('#debtSave').addEventListener('click', ()=>{
   const who=$('#debtWho').value.trim(); const total=num($('#debtAmount').value);
+  const currency=$('#debtCurrency').value;
   if(!who||!total){ toast('الاسم والمبلغ ضروريين'); return; }
+  const note=$('#debtNote').value.trim();
   if(debtEditId){
-    db.debts=db.debts.map(d=>d.id===debtEditId?{...d,who,total,dir:debtDir,note:$('#debtNote').value.trim()}:d);
+    db.debts=db.debts.map(d=>d.id===debtEditId?{...d,who,total,dir:debtDir,note,currency}:d);
   } else {
-    db.debts.push({id:uid(),who,total,dir:debtDir,note:$('#debtNote').value.trim(),paid:0});
+    db.debts.push({id:uid(),who,total,dir:debtDir,note,currency,payments:[],createdAt:todayISO()});
   }
-  save(); closeSheets(); render('debts'); toast('تمام ✅');
+  save(); closeSheets();
+  render(currentDebtId ? 'debt-detail' : 'debts');
+  toast('تمام ✅');
 });
 $('#debtDelete').addEventListener('click', ()=>{
-  db.debts=db.debts.filter(d=>d.id!==debtEditId); save(); closeSheets(); render('debts'); toast('انحذف');
+  db.debts=db.debts.filter(d=>d.id!==debtEditId); save(); closeSheets();
+  currentDebtId=null; go('debts'); toast('انحذف');
 });
+
+/* ---------- payment sheet ---------- */
+let payState = {debtId:null, editIdx:null};
+function openPaymentSheet(debtId, editIdx){
+  payState = {debtId, editIdx: editIdx==null?null:editIdx};
+  const debt = db.debts.find(d=>d.id===debtId);
+  const p = editIdx!=null ? debt.payments[editIdx] : null;
+  $('#payTitle').textContent = p ? 'تعديل الدفعة' : (debt.dir==='onMe'?'دفعة سدّدتيها':'دفعة رجعتلك');
+  $('#payAmount').value = p ? p.amount : '';
+  $('#payDate').value = p ? p.date : todayISO();
+  $('#payNote').value = p ? (p.note||'') : '';
+  $('#payDelete').style.display = p ? '' : 'none';
+  openSheet('sheet-payment');
+  if(!p) setTimeout(()=>$('#payAmount').focus(),250);
+}
+$('#paySave').addEventListener('click', ()=>{
+  const debt = db.debts.find(d=>d.id===payState.debtId); if(!debt) return;
+  const amount = num($('#payAmount').value);
+  if(!amount){ toast('حطي المبلغ أول'); return; }
+  const date = $('#payDate').value || todayISO();
+  const note = $('#payNote').value.trim();
+  const payment = {amount, date, note};
+  if(payState.editIdx!=null){
+    debt.payments[payState.editIdx] = payment;
+  } else {
+    debt.payments = debt.payments || [];
+    debt.payments.push(payment);
+    /* auto-log the transaction on new payments only */
+    const cat = debt.dir==='onMe' ? 'debt' : 'debtback';
+    const noteTx = (debt.dir==='onMe' ? 'سداد لـ' : 'من ') + debt.who;
+    db.tx.push({id:uid(), type: debt.dir==='onMe'?'exp':'inc', cat, amount, note: note || noteTx, who:'', date, debtId: debt.id});
+  }
+  save(); closeSheets();
+  render('debt-detail');
+  const left = debtLeft(debt);
+  toast(left<=0 ? 'سكّرتي الدين 🎉' : 'انسجلت الدفعة ✅');
+});
+$('#payDelete').addEventListener('click', ()=>{
+  const debt = db.debts.find(d=>d.id===payState.debtId); if(!debt||payState.editIdx==null) return;
+  debt.payments.splice(payState.editIdx, 1);
+  save(); closeSheets(); render('debt-detail'); toast('انحذفت الدفعة');
+});
+
+/* ---------- debt detail page state ---------- */
+let currentDebtId = null;
+function viewDebt(id){ currentDebtId = id; go('debt-detail'); }
 
 /* ---------- goal sheet ---------- */
 let goalEditId=null;
@@ -1077,7 +1171,7 @@ $('#btnAIReview').addEventListener('click', async ()=>{
     return `شهر ${ymLabel(y)}: دخل ${Math.round(monthIncome(y))}، مصروف ${Math.round(monthSpend(y))} (${cats||'بدون مصاريف'})`;
   }).join('\n');
   const subs = db.subs.map(s=>`${s.name}: ${Math.round(subMonthly(s))}/شهر${s.trial?' (تجربة)':''}`).join('، ')||'ما في';
-  const debts = db.debts.map(d=>`${d.dir==='onMe'?'عليها':'إلها'} ${Math.round(d.total-d.paid)} (${d.who})`).join('، ')||'ما في';
+  const debts = db.debts.map(d=>`${d.dir==='onMe'?'عليها':'إلها'} ${Math.round(debtLeft(d))} ${debtCcy(d)} (${d.who})`).join('، ')||'ما في';
   const goals = db.goals.map(g=>`${g.name}: ${Math.round(g.saved)}/${Math.round(g.target)}`).join('، ')||'ما في';
   btn.disabled=true; btn.textContent='عم أحلل...';
   try{
@@ -1353,18 +1447,7 @@ function renderSubs(){
 }
 document.addEventListener('click', e=>{
   const b=e.target.closest('[data-editsub]'); if(b){ openSubSheet(db.subs.find(s=>s.id===b.dataset.editsub)); }
-  const d=e.target.closest('[data-editdebt]'); if(d){ openDebtSheet(db.debts.find(x=>x.id===d.dataset.editdebt)); }
-  const p=e.target.closest('[data-paydebt]'); if(p){
-    e.stopPropagation();
-    const debt=db.debts.find(x=>x.id===p.dataset.paydebt);
-    const v=num(prompt(`قديش ${debt.dir==='onMe'?'سددتي':'رجعولك'}؟ (ضايل ${fmt(debt.total-debt.paid)})`));
-    if(v>0){
-      debt.paid=Math.min(debt.paid+v,debt.total);
-      if(debt.dir==='onMe') db.tx.push({id:uid(),type:'exp',cat:'debt',amount:v,note:'سداد لـ'+debt.who,who:'',date:todayISO()});
-      else db.tx.push({id:uid(),type:'inc',cat:'debtback',amount:v,note:'من '+debt.who,who:'',date:todayISO()});
-      save(); render('debts'); toast(debt.paid>=debt.total?'سكّرتي الدين 🎉':'انسجلت الدفعة ✅');
-    }
-  }
+  const dv=e.target.closest('[data-viewdebt]'); if(dv){ viewDebt(dv.dataset.viewdebt); }
   const g=e.target.closest('[data-fundgoal]'); if(g){
     e.stopPropagation();
     const goal=db.goals.find(x=>x.id===g.dataset.fundgoal);
@@ -1378,26 +1461,107 @@ document.addEventListener('click', e=>{
   const ge=e.target.closest('[data-editgoal]'); if(ge){ openGoalSheet(db.goals.find(x=>x.id===ge.dataset.editgoal)); }
 });
 
+function totalsByCurrency(debts){
+  const m = {};
+  debts.forEach(d => {
+    const c = debtCcy(d);
+    m[c] = (m[c]||0) + debtLeft(d);
+  });
+  return Object.entries(m).filter(([,v])=>v>0);
+}
 function renderDebts(){
-  const onMe=db.debts.filter(d=>d.dir==='onMe'&&d.total>d.paid);
-  const toMe=db.debts.filter(d=>d.dir==='toMe'&&d.total>d.paid);
-  const closed=db.debts.filter(d=>d.total<=d.paid);
-  const row=d=>{
-    const left=d.total-d.paid;
-    return `<div class="row" style="cursor:default">
-      <span class="dot">${d.dir==='onMe'?'📤':'📥'}</span>
-      <span class="grow"><span class="t1">${esc(d.who)}</span>
-      <span class="t2">${left>0?`ضايل <span class="num">${fmt(left)}</span> من <span class="num">${fmt(d.total)}</span>`:'مسكّر 🎉'}${d.note?' · '+esc(d.note):''}</span></span>
-      ${left>0?`<button class="btn ghost sm" data-paydebt="${d.id}">دفعة</button>`:''}
-      <button class="btn ghost sm" data-editdebt="${d.id}">✎</button>
+  const onMe = db.debts.filter(d => debtLeft(d) > 0 && d.dir === 'onMe');
+  const toMe = db.debts.filter(d => debtLeft(d) > 0 && d.dir === 'toMe');
+  const closed = db.debts.filter(d => debtLeft(d) <= 0);
+  /* dashboard: totals per currency, side by side */
+  const onMeTotals = totalsByCurrency(onMe);
+  const toMeTotals = totalsByCurrency(toMe);
+  const totalsHTML = (label, color, totals) => `
+    <div class="card" style="border-inline-start:3px solid ${color}">
+      <div class="muted" style="font-size:12px;font-weight:600;margin-bottom:6px">${label}</div>
+      ${totals.length
+        ? `<div style="display:flex;flex-wrap:wrap;gap:14px">${totals.map(([c,v])=>
+            `<div><b style="font-size:19px" class="num">${fmt(v)}</b> <span style="font-size:13px;color:var(--ink2);font-weight:600">${c}</span></div>`
+          ).join('')}</div>`
+        : `<span class="muted" style="font-size:13px">ولا شي 🎉</span>`
+      }
     </div>`;
+  $('#debtsSummary').innerHTML =
+    totalsHTML('عليّ الآن', 'var(--bad)', onMeTotals) +
+    totalsHTML('إلي عند الناس', 'var(--good)', toMeTotals);
+
+  const row = d => {
+    const left = debtLeft(d), c = debtCcy(d);
+    const status = left>0
+      ? `<span class="num">${fmt(left)}</span> ${c} <span class="tiny" style="margin-inline-start:4px">من ${fmt(d.total)}</span>`
+      : `مسكّر 🎉`;
+    return `<button class="row" data-viewdebt="${d.id}">
+      <span class="dot">${d.dir==='onMe'?'📤':'📥'}</span>
+      <span class="grow"><span class="t1">${esc(d.who)}</span><span class="t2">${status}${d.note?' · '+esc(d.note):''}</span></span>
+      <span class="chev" style="color:var(--ink3)">‹</span>
+    </button>`;
   };
-  let html='';
-  if(onMe.length) html+=`<div class="card flat"><b style="color:var(--bad);font-size:13px">عليّ (${fmt(onMe.reduce((a,d)=>a+d.total-d.paid,0))} ${cur()})</b></div><div class="list" style="margin-bottom:12px">${onMe.map(row).join('')}</div>`;
-  if(toMe.length) html+=`<div class="card flat"><b style="color:var(--good);font-size:13px">إلي (${fmt(toMe.reduce((a,d)=>a+d.total-d.paid,0))} ${cur()})</b></div><div class="list" style="margin-bottom:12px">${toMe.map(row).join('')}</div>`;
-  if(closed.length) html+=`<div class="card flat"><b class="muted" style="font-size:13px">مسكّرة ✅</b></div><div class="list">${closed.map(row).join('')}</div>`;
-  $('#debtsList').innerHTML = html||`<div class="card"><div class="empty"><span class="big">🤝</span>ولا دين — الله يديمها 🙏</div></div>`;
-  $('#debtsList').className='';
+  const section = (label, color, list) => list.length
+    ? `<div class="sec-row" style="margin-top:16px"><b style="color:${color};font-size:13px">${label}</b></div><div class="list">${list.map(row).join('')}</div>`
+    : '';
+  const html =
+    section('عليّ', 'var(--bad)', onMe) +
+    section('إلي', 'var(--good)', toMe) +
+    section('مسكّرة ✅', 'var(--ink3)', closed);
+  $('#debtsList').innerHTML = html || `<div class="card"><div class="empty"><span class="big">🤝</span>ولا دين — الله يديمها 🙏</div></div>`;
+}
+
+function renderDebtDetail(){
+  const d = db.debts.find(x => x.id === currentDebtId);
+  if(!d){ go('debts'); return; }
+  const paid = debtPaid(d), left = debtLeft(d), pct = d.total>0 ? Math.min(paid/d.total, 1) : 0;
+  const stitches = 20, done = Math.round(pct * stitches);
+  const c = debtCcy(d);
+  const payments = [...(d.payments||[])].map((p,i)=>({...p, __i:i})).sort((a,b)=>b.date.localeCompare(a.date));
+  const dirBadge = d.dir==='onMe'
+    ? `<span class="idea-status s3">عليّ 📤</span>`
+    : `<span class="idea-status s1">إلي 📥</span>`;
+  $('#debtDetailBody').innerHTML = `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px">
+        <b style="font-size:19px;font-family:var(--display)">${esc(d.who)}</b>
+        ${dirBadge}
+      </div>
+      ${d.note ? `<p class="muted" style="margin-bottom:10px">${esc(d.note)}</p>` : ''}
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px">
+        <span class="muted" style="font-size:13px">${left>0 ? 'الباقي' : 'مسكّر 🎉'}</span>
+        <b style="font-size:24px" class="num">${fmt(left)} ${c}</b>
+      </div>
+      <div class="muted" style="font-size:12px;margin-top:2px">
+        سدّدتِ <span class="num">${fmt(paid)}</span> من إجمالي <span class="num">${fmt(d.total)}</span> ${c}
+      </div>
+      <div class="stitch-track" aria-hidden="true" style="margin-top:14px">
+        ${Array.from({length:stitches},(_,i)=>`<i class="${i<done?'done':''}"></i>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        ${left>0 ? `<button class="btn primary sm" id="btnDetailAddPay">+ دفعة</button>` : ''}
+        <button class="btn ghost sm" id="btnDetailEdit">تعديل الدين</button>
+      </div>
+      ${d.createdAt ? `<p class="tiny" style="margin-top:10px">فتحتِ الدين يوم ${dayLabel(d.createdAt)}</p>` : ''}
+    </div>
+
+    <div class="sec-row"><h2 class="sec">الدفعات</h2></div>
+    ${payments.length
+      ? `<div class="list">${payments.map(p=>`
+          <button class="row" data-editpay="${p.__i}">
+            <span class="dot">💵</span>
+            <span class="grow">
+              <span class="t1"><span class="num">${fmt(p.amount)}</span> ${c}</span>
+              <span class="t2">${dayLabel(p.date)}${p.note?' · '+esc(p.note):''}</span>
+            </span>
+            <span class="chev" style="color:var(--ink3)">‹</span>
+          </button>`).join('')}</div>`
+      : `<div class="card"><div class="empty"><span class="big">💵</span>ولا دفعة لسا. اكبسي "+ دفعة" لأول وحدة.</div></div>`
+    }
+  `;
+  const addPay = $('#btnDetailAddPay'); if(addPay) addPay.addEventListener('click', ()=>openPaymentSheet(d.id));
+  $('#btnDetailEdit').addEventListener('click', ()=>openDebtSheet(d));
+  $$('#debtDetailBody [data-editpay]').forEach(b=>b.addEventListener('click', ()=>openPaymentSheet(d.id, +b.dataset.editpay)));
 }
 function renderGoals(){
   $('#goalsList').innerHTML = db.goals.length ? db.goals.map(g=>{
@@ -1449,8 +1613,10 @@ document.addEventListener('click', e=>{
 function renderMore(){
   const subsTotal=db.subs.reduce((a,s)=>a+subMonthly(s),0);
   $('#mSubsSummary').textContent = db.subs.length?`${db.subs.length} اشتراكات · ${fmt(subsTotal)} ${cur()}/شهر`:'ولا اشتراك مسجل';
-  const owe=db.debts.filter(d=>d.dir==='onMe').reduce((a,d)=>a+Math.max(d.total-d.paid,0),0);
-  $('#mDebtsSummary').textContent = owe>0?`عليكي ${fmt(owe)} ${cur()}`:'ولا دين مفتوح 🎉';
+  const oweTotals = totalsByCurrency(db.debts.filter(d=>d.dir==='onMe'));
+  $('#mDebtsSummary').textContent = oweTotals.length
+    ? 'عليكِ: ' + oweTotals.map(([c,v])=>`${fmt(v)} ${c}`).join(' · ')
+    : 'ولا دين مفتوح 🎉';
   $('#mGoalsSummary').textContent = db.goals.length?`${db.goals.length} أهداف شغالة`:'ولا هدف بعد';
   const pendingWish=db.wishlist.filter(w=>!w.bought);
   $('#mWishSummary').textContent = pendingWish.length?`${pendingWish.length} أشياء · ${fmt(pendingWish.reduce((a,w)=>a+w.price,0))} ${cur()}`:'ولا شي مسجل بعد';
@@ -1510,7 +1676,7 @@ $('#importFile').addEventListener('change', e=>{
    BOOT
 ================================================================= */
 const RENDER = {home:renderHome, history:renderHistory, analytics:renderAnalytics,
-  ideas:renderIdeas, more:renderMore, subs:renderSubs, debts:renderDebts, goals:renderGoals, wishlist:renderWishlist, settings:renderSettings};
+  ideas:renderIdeas, more:renderMore, subs:renderSubs, debts:renderDebts, 'debt-detail':renderDebtDetail, goals:renderGoals, wishlist:renderWishlist, settings:renderSettings};
 function render(page){ (RENDER[page]||(()=>{}))(); if(page==='more') renderMore(); }
 
 boot();
