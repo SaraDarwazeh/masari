@@ -677,6 +677,7 @@ const CATS = {
     {id:'subs',   nm:'اشتراكات',  em:'🔁'},
     {id:'azayem', nm:'عزايم',     em:'🍽️'},
     {id:'sadaqa', nm:'صدقة',      em:'🤲'},
+    {id:'hasanat',nm:'حسنات',     em:'🍬'},
     {id:'family', nm:'عيلة',      em:'🏡'},
     {id:'debt',   nm:'سداد دين',  em:'🤝'},
     {id:'shop',   nm:'تسوّق',     em:'🛍️'},
@@ -1427,7 +1428,7 @@ const insightHTML = i => `<div class="insight ${i.cls}"><span class="em">${i.em}
    CHARTS (hand-rolled SVG, palette validated for CVD)
 ================================================================= */
 /* stable hue per category — color follows the entity, not its rank */
-const CAT_COLOR_PREF = {food:0, azayem:1, uni:2, trans:3, subs:4, shop:5, family:2, sadaqa:3, health:5, debt:4, goal:0, other:5, __rest:5};
+const CAT_COLOR_PREF = {food:0, azayem:1, uni:2, trans:3, subs:4, shop:5, family:2, sadaqa:3, hasanat:1, health:5, debt:4, goal:0, other:5, __rest:5};
 function donutSVG(entries, total){
   /* top 5 + Other, visible gaps, direct labels in legend */
   let items = entries.slice(0,5);
