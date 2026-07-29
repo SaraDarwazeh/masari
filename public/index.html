@@ -688,6 +688,7 @@ const CATS = {
   inc: [
     {id:'project',nm:'مشروع',     em:'💼'},
     {id:'fixed',  nm:'دخل ثابت',  em:'📆'},
+    {id:'debtin', nm:'دين',       em:'💸'},
     {id:'debtback',nm:'رجعولي دين',em:'🤝'},
     {id:'iother', nm:'غير هيك',   em:'💵'},
   ]
@@ -1117,7 +1118,15 @@ $('#debtSave').addEventListener('click', ()=>{
   if(debtEditId){
     db.debts=db.debts.map(d=>d.id===debtEditId?{...d,who,total,dir:debtDir,note,currency}:d);
   } else {
-    db.debts.push({id:uid(),who,total,dir:debtDir,note,currency,payments:[],createdAt:todayISO()});
+    const debtId=uid();
+    db.debts.push({id:debtId,who,total,dir:debtDir,note,currency,payments:[],createdAt:todayISO()});
+    /* عليّ = استلمت مصاري كدين → سجّليها دخل تلقائياً */
+    if(debtDir==='onMe'){
+      db.tx.push({
+        id:uid(), type:'inc', cat:'debtin', amount:total,
+        note: note || ('دين من ' + who), who, date:todayISO(), debtId
+      });
+    }
   }
   save(); closeSheets();
   render(currentDebtId ? 'debt-detail' : 'debts');
