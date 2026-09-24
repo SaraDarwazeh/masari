@@ -1120,11 +1120,16 @@ $('#debtSave').addEventListener('click', ()=>{
   } else {
     const debtId=uid();
     db.debts.push({id:debtId,who,total,dir:debtDir,note,currency,payments:[],createdAt:todayISO()});
-    /* عليّ = استلمت مصاري كدين → سجّليها دخل تلقائياً */
+    /* عليّ = استلمت مصاري كدين → سجّليها دخل؛ إلي = أعطيت مصاري → سجّليها مصروف */
     if(debtDir==='onMe'){
       db.tx.push({
         id:uid(), type:'inc', cat:'debtin', amount:total,
         note: note || ('دين من ' + who), who, date:todayISO(), debtId
+      });
+    } else if(debtDir==='toMe'){
+      db.tx.push({
+        id:uid(), type:'exp', cat:'debt', amount:total,
+        note: note || ('دين لـ ' + who), who, date:todayISO(), debtId
       });
     }
   }
