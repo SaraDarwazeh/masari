@@ -518,6 +518,13 @@ table.mini td.n{font-variant-numeric:tabular-nums}
   </div>
   <div class="field"><input type="text" inputmode="decimal" class="amount-input" id="txAmount" placeholder="0.00" autocomplete="off"></div>
   <div class="field"><label>وين؟</label><div class="catgrid" id="txCats"></div></div>
+  <div class="field" id="txOutHomeField" style="display:none">
+    <label>أكل ولا شرب؟</label>
+    <div class="seg" id="txOutHomeSeg">
+      <button type="button" data-v="food" class="on">أكل 🍔</button>
+      <button type="button" data-v="drink">شرب 🥤</button>
+    </div>
+  </div>
   <div class="field" id="txWhoField" style="display:none"><label>عزمتي مين؟ 😄</label><input type="text" id="txWho" placeholder="مثلاً: صحبات الجامعة"></div>
   <div class="field"><label>ملاحظة (اختياري)</label><input type="text" id="txNote" placeholder="شو كانت؟"></div>
   <div class="field"><label>التاريخ</label><input type="date" id="txDate"></div>
@@ -669,9 +676,15 @@ const $$ = s => [...document.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
 
 /* ---------- categories ---------- */
+const OUT_HOME_ID = 'outHome';
+const OUT_HOME_SUBS = [
+  {id:'food',  nm:'أكل', em:'🍔'},
+  {id:'drink', nm:'شرب', em:'🥤'},
+];
+const isOutHomeSub = id => OUT_HOME_SUBS.some(s=>s.id===id);
 const CATS = {
   exp: [
-    {id:'food',   nm:'أكل',       em:'🍔'},
+    {id:OUT_HOME_ID, nm:'خارج المنزل', em:'🏙️', subs:OUT_HOME_SUBS},
     {id:'trans',  nm:'مواصلات',   em:'🚌'},
     {id:'uni',    nm:'جامعة',     em:'🎓'},
     {id:'subs',   nm:'اشتراكات',  em:'🔁'},
@@ -693,7 +706,21 @@ const CATS = {
     {id:'iother', nm:'غير هيك',   em:'💵'},
   ]
 };
-const catOf = id => [...CATS.exp,...CATS.inc].find(c=>c.id===id) || {nm:'غير هيك',em:'📦',id:'other'};
+const catOf = id => {
+  for(const c of CATS.exp){
+    if(c.subs){
+      const s = c.subs.find(x=>x.id===id);
+      if(s) return {id:s.id, em:s.em, nm:`${c.nm} · ${s.nm}`};
+    }
+    if(c.id===id) return c;
+  }
+  const inc = CATS.inc.find(c=>c.id===id);
+  return inc || {nm:'غير هيك',em:'📦',id:'other'};
+};
+const spentForBudgetCat = (y, catId) => {
+  if(catId===OUT_HOME_ID) return sumBy(txIn(y), t=>t.type==='exp'&&isOutHomeSub(t.cat));
+  return sumBy(txIn(y), t=>t.type==='exp'&&t.cat===catId);
+};
 const CHART_COLORS = ['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c6)'];
 
 /* ---------- store (server API) ---------- */
@@ -709,6 +736,11 @@ const debtLeft = d => Math.max((+d.total||0) - debtPaid(d), 0);
 const debtCcy  = d => d.currency || db.settings.currency || '₪';
 function migrate(){
   db.wishlist = db.wishlist || [];
+  db.settings.budgets = db.settings.budgets || {};
+  if(db.settings.budgets.food != null && db.settings.budgets[OUT_HOME_ID] == null){
+    db.settings.budgets[OUT_HOME_ID] = db.settings.budgets.food;
+    delete db.settings.budgets.food;
+  }
   db.debts = (db.debts||[]).map(d => {
     const currency = d.currency || db.settings.currency || '₪';
     if (Array.isArray(d.payments)) return { ...d, currency };
@@ -1004,19 +1036,40 @@ $('#overlay').addEventListener('click', closeSheets);
 
 /* ---------- transaction sheet ---------- */
 let txState = {type:'exp', cat:'food', editId:null, wishId:null};
+function catGridSelected(c){
+  if(c.subs) return c.subs.some(s=>s.id===txState.cat);
+  return c.id===txState.cat;
+}
+function defaultCatForType(type){
+  const first = CATS[type][0];
+  return first.subs ? first.subs[0].id : first.id;
+}
 function renderTxCats(){
   const grid=$('#txCats');
   grid.innerHTML = CATS[txState.type].map(c=>
-    `<button class="catbtn ${c.id===txState.cat?'on':''}" data-cat="${c.id}"><span class="em">${c.em}</span>${c.nm}</button>`).join('');
+    `<button type="button" class="catbtn ${catGridSelected(c)?'on':''}" data-cat="${c.id}"><span class="em">${c.em}</span>${c.nm}</button>`).join('');
+  const outHomeOn = txState.type==='exp' && isOutHomeSub(txState.cat);
+  $('#txOutHomeField').style.display = outHomeOn ? '' : 'none';
+  if(outHomeOn){
+    $$('#txOutHomeSeg button').forEach(x=>x.classList.toggle('on', x.dataset.v===txState.cat));
+  }
   $('#txWhoField').style.display = txState.cat==='azayem' ? '' : 'none';
 }
 $('#txCats').addEventListener('click', e=>{
   const b=e.target.closest('[data-cat]'); if(!b) return;
-  txState.cat=b.dataset.cat; renderTxCats();
+  const id = b.dataset.cat;
+  const cat = CATS[txState.type].find(c=>c.id===id);
+  txState.cat = cat?.subs ? (isOutHomeSub(txState.cat) ? txState.cat : cat.subs[0].id) : id;
+  renderTxCats();
+});
+$('#txOutHomeSeg').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  txState.cat = b.dataset.v;
+  renderTxCats();
 });
 $('#txTypeSeg').addEventListener('click', e=>{
   const b=e.target.closest('button'); if(!b) return;
-  txState.type=b.dataset.v; txState.cat=CATS[txState.type][0].id;
+  txState.type=b.dataset.v; txState.cat=defaultCatForType(txState.type);
   $$('#txTypeSeg button').forEach(x=>x.classList.toggle('on',x===b));
   renderTxCats();
 });
@@ -1120,11 +1173,16 @@ $('#debtSave').addEventListener('click', ()=>{
   } else {
     const debtId=uid();
     db.debts.push({id:debtId,who,total,dir:debtDir,note,currency,payments:[],createdAt:todayISO()});
-    /* عليّ = استلمت مصاري كدين → سجّليها دخل تلقائياً */
+    /* عليّ = استلمت مصاري كدين → سجّليها دخل؛ إلي = أعطيت مصاري → سجّليها مصروف */
     if(debtDir==='onMe'){
       db.tx.push({
         id:uid(), type:'inc', cat:'debtin', amount:total,
         note: note || ('دين من ' + who), who, date:todayISO(), debtId
+      });
+    } else if(debtDir==='toMe'){
+      db.tx.push({
+        id:uid(), type:'exp', cat:'debt', amount:total,
+        note: note || ('دين لـ ' + who), who, date:todayISO(), debtId
       });
     }
   }
@@ -1437,7 +1495,7 @@ const insightHTML = i => `<div class="insight ${i.cls}"><span class="em">${i.em}
    CHARTS (hand-rolled SVG, palette validated for CVD)
 ================================================================= */
 /* stable hue per category — color follows the entity, not its rank */
-const CAT_COLOR_PREF = {food:0, azayem:1, uni:2, trans:3, subs:4, shop:5, family:2, sadaqa:3, hasanat:1, health:5, debt:4, goal:0, other:5, __rest:5};
+const CAT_COLOR_PREF = {food:0, drink:0, azayem:1, uni:2, trans:3, subs:4, shop:5, family:2, sadaqa:3, hasanat:1, health:5, debt:4, goal:0, other:5, __rest:5};
 function donutSVG(entries, total){
   /* top 5 + Other, visible gaps, direct labels in legend */
   let items = entries.slice(0,5);
@@ -1552,7 +1610,7 @@ function renderHome(){
   const buds = Object.entries(db.settings.budgets||{}).filter(([,v])=>v>0);
   $('#hBudgets').innerHTML = buds.length ? `<h2 class="sec">ميزانيات الشهر</h2><div class="card">`+
     buds.map(([cat,limit])=>{
-      const spent = sumBy(txIn(y), t=>t.type==='exp'&&t.cat===cat);
+      const spent = spentForBudgetCat(y, cat);
       const pct = Math.min(spent/limit*100,100);
       const cls = spent>limit?'over':(pct>80?'warn':'');
       return `<div style="margin-bottom:12px">
